@@ -7,6 +7,7 @@ import (
 	"github.com/meehighlov/workout/internal/clients"
 	"github.com/meehighlov/workout/internal/config"
 	"github.com/meehighlov/workout/internal/constants"
+	"github.com/meehighlov/workout/internal/pagination"
 	"github.com/meehighlov/workout/internal/parsers"
 	"github.com/meehighlov/workout/internal/repositories"
 	"github.com/meehighlov/workout/internal/services/element"
@@ -28,9 +29,10 @@ func New(
 	validators *validators.Validators,
 	constants *constants.Constants,
 	parsers *parsers.Parsers,
+	pagination *pagination.Pagination,
 ) *Services {
 	return &Services{
 		User:    user.New(cfg, logger, repositories, clients, builders, validators, constants, parsers),
-		Element: element.New(cfg, logger, repositories, clients, builders, validators, constants, parsers),
+		Element: element.New(cfg, logger, repositories, clients, builders, validators, constants, parsers, pagination),
 	}
 }

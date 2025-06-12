@@ -10,6 +10,8 @@ type Filter struct {
 	ID     string
 	UserID string
 	Status string
+	Limit  int
+	Offset int
 }
 
 func (r *Repository) List(ctx context.Context, filter *Filter) ([]*models.Element, error) {
@@ -23,6 +25,12 @@ func (r *Repository) List(ctx context.Context, filter *Filter) ([]*models.Elemen
 		}
 		if filter.Status != "" {
 			query = query.Where("status = ?", filter.Status)
+		}
+		if filter.Limit > 0 {
+			query = query.Limit(filter.Limit)
+		}
+		if filter.Offset > 0 {
+			query = query.Offset(filter.Offset)
 		}
 	}
 

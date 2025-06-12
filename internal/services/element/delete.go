@@ -16,10 +16,10 @@ func (s *Service) Delete(ctx context.Context, update *telegram.Update) error {
 		return err
 	}
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	keyboard.AppendAsLine(
-		keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_INFO_ELEMENT).String()),
-		keyboard.NewButton(s.constants.BUTTON_TEXT_DELETE, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_DELETE_ELEMENT_CONFIRM).String()),
+		keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_INFO_ELEMENT, params.Offset).String()),
+		keyboard.NewButton(s.constants.BUTTON_TEXT_DELETE, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_DELETE_ELEMENT_CONFIRM, params.Offset).String()),
 	)
 
 	header := fmt.Sprintf("Вы уверены, что хотите удалить %s?", elementToDelete.Name)
@@ -41,8 +41,8 @@ func (s *Service) DeleteConfirm(ctx context.Context, update *telegram.Update) er
 		return err
 	}
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_LIST_ELEMENT).String()))
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToDelete.ID.String(), s.constants.COMMAND_LIST_ELEMENT, params.Offset).String()))
 
 	header := fmt.Sprintf("Элемент %s удален", elementToDelete.Name)
 	s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))

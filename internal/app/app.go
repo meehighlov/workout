@@ -5,6 +5,7 @@ import (
 	"github.com/meehighlov/workout/internal/clients"
 	"github.com/meehighlov/workout/internal/config"
 	"github.com/meehighlov/workout/internal/constants"
+	"github.com/meehighlov/workout/internal/pagination"
 	"github.com/meehighlov/workout/internal/parsers"
 	"github.com/meehighlov/workout/internal/repositories"
 	"github.com/meehighlov/workout/internal/server"
@@ -22,7 +23,8 @@ func Run() {
 	validators := validators.New(cfg, logger)
 	constants := constants.New(cfg)
 	parsers := parsers.New(cfg, logger)
-	services := services.New(cfg, logger, repositories, clients, builders, validators, constants, parsers)
+	pagination := pagination.New(builders)
+	services := services.New(cfg, logger, repositories, clients, builders, validators, constants, parsers, pagination)
 
 	server := server.New(cfg, logger, services, clients, constants, builders)
 	server.Serve()

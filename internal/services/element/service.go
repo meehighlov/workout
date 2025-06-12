@@ -7,6 +7,7 @@ import (
 	"github.com/meehighlov/workout/internal/clients"
 	"github.com/meehighlov/workout/internal/config"
 	"github.com/meehighlov/workout/internal/constants"
+	"github.com/meehighlov/workout/internal/pagination"
 	"github.com/meehighlov/workout/internal/parsers"
 	"github.com/meehighlov/workout/internal/repositories"
 	"github.com/meehighlov/workout/internal/validators"
@@ -20,9 +21,20 @@ type Service struct {
 	validators   *validators.Validators
 	constants    *constants.Constants
 	parsers      *parsers.Parsers
+	pagination   *pagination.Pagination
 }
 
-func New(cfg *config.Config, logger *slog.Logger, repositories *repositories.Repositories, clients *clients.Clients, builders *builders.Builders, validators *validators.Validators, constants *constants.Constants, parsers *parsers.Parsers) *Service {
+func New(
+	cfg *config.Config,
+	logger *slog.Logger,
+	repositories *repositories.Repositories,
+	clients *clients.Clients,
+	builders *builders.Builders,
+	validators *validators.Validators,
+	constants *constants.Constants,
+	parsers *parsers.Parsers,
+	pagination *pagination.Pagination,
+) *Service {
 	return &Service{
 		logger:       logger,
 		repositories: repositories,
@@ -31,5 +43,6 @@ func New(cfg *config.Config, logger *slog.Logger, repositories *repositories.Rep
 		validators:   validators,
 		constants:    constants,
 		parsers:      parsers,
+		pagination:   pagination,
 	}
 }
