@@ -2,6 +2,7 @@ package element
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/meehighlov/workout/internal/clients/telegram"
@@ -14,7 +15,7 @@ func (s *Service) Add(ctx context.Context, update *telegram.Update) error {
 		ctx,
 		"Введите название элемента",
 		update,
-		telegram.WithReplyMurkup(s.builders.KeyboardBuilder.BuildInlineKeyboard().Murkup()),
+		telegram.WithReplyMurkup(s.builders.KeyboardBuilder.Keyboard().Murkup()),
 	)
 
 	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), s.constants.COMMAND_ADD_ELEMENT_SAVE)
@@ -28,10 +29,12 @@ func (s *Service) AddSave(ctx context.Context, update *telegram.Update) error {
 		return err
 	}
 
+	name := strings.ToLower(strings.TrimSpace(update.Message.Text))
+
 	element := &models.Element{
 		ID:     uuid.New(),
 		UserID: user.ID,
-		Name:   update.Message.Text,
+		Name:   name,
 	}
 
 	err = s.repositories.Element.Save(ctx, element, nil)
@@ -41,9 +44,9 @@ func (s *Service) AddSave(ctx context.Context, update *telegram.Update) error {
 
 	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_INFO_ELEMENT, s.builders.CallbackDataBuilder.Build(element.ID.String(), s.constants.COMMAND_INFO_ELEMENT).String()))
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_ADD_ELEMENT, s.builders.CallbackDataBuilder.Build(user.ID.String(), s.constants.COMMAND_ADD_ELEMENT).String()))
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_INFO_ELEMENT, s.builders.CallbackDataBuilder.Build(element.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String()))
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_ADD_ELEMENT, s.builders.CallbackDataBuilder.Build(user.ID.String(), s.constants.COMMAND_ADD_ELEMENT, "0").String()))
 
 	s.clients.Telegram.Reply(ctx, "Элемент добавлен", update, telegram.WithReplyMurkup(keyboard.Murkup()))
 

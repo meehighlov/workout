@@ -87,8 +87,6 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 	switch command {
 	case s.constants.COMMAND_START:
 		return s.services.User.Start(ctx, update)
-	case s.constants.COMMAND_LIST_ELEMENT:
-		return s.services.Element.List(ctx, update)
 	case s.constants.COMMAND_ADD_ELEMENT:
 		return s.services.Element.Add(ctx, update)
 	case s.constants.COMMAND_ELEMENTS, s.constants.COMMAND_LIST_ELEMENT:

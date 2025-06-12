@@ -8,10 +8,10 @@ import (
 )
 
 func (s *Service) Edit(ctx context.Context, update *telegram.Update) error {
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	keyboard.AppendAsLine(
-		keyboard.NewButton(s.constants.BUTTON_TEXT_NAME, s.builders.CallbackDataBuilder.Build("name", s.constants.COMMAND_EDIT_ELEMENT_REQUEST).String()),
-		keyboard.NewButton(s.constants.BUTTON_TEXT_LINK, s.builders.CallbackDataBuilder.Build("link", s.constants.COMMAND_EDIT_ELEMENT_REQUEST).String()),
+		keyboard.NewButton(s.constants.BUTTON_TEXT_NAME, s.builders.CallbackDataBuilder.Build("name", s.constants.COMMAND_EDIT_ELEMENT_REQUEST, "0").String()),
+		keyboard.NewButton(s.constants.BUTTON_TEXT_LINK, s.builders.CallbackDataBuilder.Build("link", s.constants.COMMAND_EDIT_ELEMENT_REQUEST, "0").String()),
 	)
 
 	params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
@@ -60,8 +60,8 @@ func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) err
 
 	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
-	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT).String())
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String())
 	keyboard.AppendAsLine(backButton)
 
 	s.clients.Telegram.Reply(ctx, "Элемент обновлен", update, telegram.WithReplyMurkup(keyboard.Murkup()))
@@ -89,8 +89,8 @@ func (s *Service) EditLinkSave(ctx context.Context, update *telegram.Update) err
 
 	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
-	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT).String())
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String())
 	keyboard.AppendAsLine(backButton)
 
 	s.clients.Telegram.Reply(ctx, "Элемент обновлен", update, telegram.WithReplyMurkup(keyboard.Murkup()))

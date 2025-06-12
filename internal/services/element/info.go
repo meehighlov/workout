@@ -24,10 +24,10 @@ func (s *Service) Info(ctx context.Context, update *telegram.Update) error {
 		}
 	}
 
-	keyboard := s.builders.KeyboardBuilder.BuildInlineKeyboard()
-	buttonBack := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_LIST_ELEMENT).String())
-	buttonEdit := keyboard.NewButton(s.constants.BUTTON_TEXT_EDIT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_EDIT_ELEMENT).String())
-	buttonDelete := keyboard.NewButton(s.constants.BUTTON_TEXT_DELETE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_DELETE_ELEMENT).String())
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	buttonBack := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_LIST_ELEMENT, params.Offset).String())
+	buttonEdit := keyboard.NewButton(s.constants.BUTTON_TEXT_EDIT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_EDIT_ELEMENT, params.Offset).String())
+	buttonDelete := keyboard.NewButton(s.constants.BUTTON_TEXT_DELETE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_DELETE_ELEMENT, params.Offset).String())
 
 	header := fmt.Sprintf("💪 %s\n\n", element.Name)
 	header += fmt.Sprintf("%s\n\n", element.ElementReadableStatus(""))
@@ -36,10 +36,11 @@ func (s *Service) Info(ctx context.Context, update *telegram.Update) error {
 		keyboard.AppendAsLine(buttonTutorial)
 	}
 
-	buttonSwitchStatus := keyboard.NewButton(element.ElementReadableStatus(element.NextStatus()), s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_ELEMENT_SWITCH_STATUS).String())
-	keyboard.AppendAsLine(buttonSwitchStatus)
+	buttonSwitchStatus := keyboard.NewButton(element.ElementReadableStatus(element.NextStatus()), s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_ELEMENT_SWITCH_STATUS, params.Offset).String())
 
-	keyboard.AppendAsLine(buttonBack, buttonEdit, buttonDelete)
+	keyboard.
+	AppendAsLine(buttonSwitchStatus).
+	AppendAsLine(buttonBack, buttonEdit, buttonDelete)
 
 	s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 
