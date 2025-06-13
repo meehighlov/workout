@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	ELEMENT_STATUS_OPEN = "open"
+	ELEMENT_STATUS_OPEN        = "open"
 	ELEMENT_STATUS_IN_PROGRESS = "in_progress"
-	ELEMENT_STATUS_MASTERED = "mastered"
+	ELEMENT_STATUS_MASTERED    = "mastered"
 )
 
 type Element struct {

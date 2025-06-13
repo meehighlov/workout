@@ -30,11 +30,7 @@ func (r *Repository) Get(ctx context.Context, filter *Filter, tx *gorm.DB) (*mod
 	}
 
 	err := q.First(user).Error
-	if err != nil {
-		r.logger.Error("Get error", "reason", err, "id", filter.TgChatID)
-		return nil, err
-	}
 
 	r.logger.Debug("Get done", "id", user.ID)
-	return user, nil
+	return user, err
 }

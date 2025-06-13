@@ -5,15 +5,15 @@ import (
 )
 
 type Pagination struct {
-	builders *builders.Builders
+	builders   *builders.Builders
 	BaseOffset int
-	Limit int
+	Limit      int
 }
 
 func New(builders *builders.Builders) *Pagination {
 	return &Pagination{
-		builders: builders,
+		builders:   builders,
 		BaseOffset: 6,
-		Limit: 6,
+		Limit:      6,
 	}
 }

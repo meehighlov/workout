@@ -10,6 +10,5 @@ type Parsers struct {
 }
 
 func New(cfg *config.Config, logger *slog.Logger) *Parsers {
-	return &Parsers{
-	}
+	return &Parsers{}
 }

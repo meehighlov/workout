@@ -25,6 +25,7 @@ type Config struct {
 	WatcherCheckIntervalSec    int    `env:"WATCHER_CHECK_INTERVAL_SEC" env-default:"10"`
 	ChatCacheExpirationMinutes int    `env:"CHAT_CACHE_EXPIRATION_MINUTES" env-default:"10"`
 	LoggingFileName            string `env:"LOGGING_FILE_NAME" env-default:"workout.log"`
+	ShortIDLength              int    `env:"SHORT_ID_LENGTH" env-default:"6"`
 
 	TelegramToken              string `env:"TELEGRAM_TOKEN" env-required:"true"`
 	TelegramUseWebook          bool   `env:"TELEGRAM_USE_WEBHOOK" env-default:"false"`
