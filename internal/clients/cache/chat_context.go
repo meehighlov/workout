@@ -8,9 +8,10 @@ import (
 )
 
 type ChatContext struct {
-	ChatId        string   `json:"chatId"`
-	UserResponses []string `json:"userResponses"`
-	NextHandler   string   `json:"nextHandler"`
+	ChatId          string   `json:"chatId"`
+	UserResponses   []string `json:"userResponses"`
+	WorkoutElements []string `json:"workoutElements"`
+	NextHandler     string   `json:"nextHandler"`
 }
 
 func newChatContext(chatId string) *ChatContext {
@@ -38,6 +39,7 @@ func (ctx *ChatContext) SetNextHandler(nextHandler string) string {
 func (ctx *ChatContext) reset() error {
 	ctx.NextHandler = ""
 	ctx.UserResponses = []string{}
+	ctx.WorkoutElements = []string{}
 	return nil
 }
 
@@ -96,6 +98,39 @@ func (c *Client) AppendText(chatId string, text string) error {
 
 	ctx.AppendText(text)
 	return c.saveChatContext(ctx)
+}
+
+func (c *Client) AppendWorkoutElement(chatId string, workoutElement string) error {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return errors.New("chat context not found")
+	}
+
+	ctx.WorkoutElements = append(ctx.WorkoutElements, workoutElement)
+	return c.saveChatContext(ctx)
+}
+
+func (c *Client) PopWorkoutElement(chatId string) error {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return errors.New("chat context not found")
+	}
+
+	if len(ctx.WorkoutElements) == 0 {
+		return nil
+	}
+
+	ctx.WorkoutElements = ctx.WorkoutElements[:len(ctx.WorkoutElements)-1]
+	return c.saveChatContext(ctx)
+}
+
+func (c *Client) GetWorkoutElements(chatId string) []string {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return nil
+	}
+
+	return ctx.WorkoutElements
 }
 
 func (c *Client) GetTexts(chatId string) []string {

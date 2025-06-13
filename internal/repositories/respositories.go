@@ -9,6 +9,7 @@ import (
 	"github.com/meehighlov/workout/internal/config"
 	"github.com/meehighlov/workout/internal/repositories/element"
 	"github.com/meehighlov/workout/internal/repositories/user"
+	"github.com/meehighlov/workout/internal/repositories/workout"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -17,6 +18,7 @@ import (
 type Repositories struct {
 	User    *user.Repository
 	Element *element.Repository
+	Workout *workout.Repository
 }
 
 func New(cfg *config.Config, logger *slog.Logger) *Repositories {
@@ -42,5 +44,6 @@ func New(cfg *config.Config, logger *slog.Logger) *Repositories {
 	return &Repositories{
 		User:    user.New(cfg, db, logger),
 		Element: element.New(cfg, db, logger),
+		Workout: workout.New(cfg, db, logger),
 	}
 }

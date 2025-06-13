@@ -39,8 +39,8 @@ func (s *Service) Info(ctx context.Context, update *telegram.Update) error {
 	buttonSwitchStatus := keyboard.NewButton(element.ElementReadableStatus(element.NextStatus()), s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_ELEMENT_SWITCH_STATUS, params.Offset).String())
 
 	keyboard.
-	AppendAsLine(buttonSwitchStatus).
-	AppendAsLine(buttonBack, buttonEdit, buttonDelete)
+		AppendAsLine(buttonSwitchStatus).
+		AppendAsLine(buttonBack, buttonEdit, buttonDelete)
 
 	s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 

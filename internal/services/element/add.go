@@ -45,8 +45,8 @@ func (s *Service) AddSave(ctx context.Context, update *telegram.Update) error {
 	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_INFO_ELEMENT, s.builders.CallbackDataBuilder.Build(element.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String()))
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_ADD_ELEMENT, s.builders.CallbackDataBuilder.Build(user.ID.String(), s.constants.COMMAND_ADD_ELEMENT, "0").String()))
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_OPEN, s.builders.CallbackDataBuilder.Build(element.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String()))
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_ADD, s.builders.CallbackDataBuilder.Build(user.ID.String(), s.constants.COMMAND_ADD_ELEMENT, "0").String()))
 
 	s.clients.Telegram.Reply(ctx, "Элемент добавлен", update, telegram.WithReplyMurkup(keyboard.Murkup()))
 

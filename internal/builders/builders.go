@@ -17,7 +17,7 @@ type Builders struct {
 
 func New(cfg *config.Config, logger *slog.Logger) *Builders {
 	return &Builders{
-		ShortIdBuilder:      short_id.New(6),
+		ShortIdBuilder:      short_id.New(cfg),
 		CallbackDataBuilder: callbackdata.New(),
 		KeyboardBuilder:     inlinekeyboard.New(),
 	}

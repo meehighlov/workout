@@ -12,12 +12,14 @@ import (
 	"github.com/meehighlov/workout/internal/repositories"
 	"github.com/meehighlov/workout/internal/services/element"
 	"github.com/meehighlov/workout/internal/services/user"
+	"github.com/meehighlov/workout/internal/services/workout"
 	"github.com/meehighlov/workout/internal/validators"
 )
 
 type Services struct {
 	User    *user.Service
 	Element *element.Service
+	Workout *workout.Service
 }
 
 func New(
@@ -34,5 +36,6 @@ func New(
 	return &Services{
 		User:    user.New(cfg, logger, repositories, clients, builders, validators, constants, parsers),
 		Element: element.New(cfg, logger, repositories, clients, builders, validators, constants, parsers, pagination),
+		Workout: workout.New(cfg, logger, repositories, clients, builders, validators, constants, parsers, pagination),
 	}
 }

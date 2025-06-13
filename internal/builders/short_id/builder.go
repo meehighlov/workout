@@ -3,6 +3,8 @@ package short_id
 import (
 	"math/rand"
 	"time"
+
+	"github.com/meehighlov/workout/internal/config"
 )
 
 type Builder struct {
@@ -12,9 +14,9 @@ type Builder struct {
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-func New(length int) *Builder {
+func New(cfg *config.Config) *Builder {
 	return &Builder{
-		length:  length,
+		length:  cfg.ShortIDLength,
 		charset: charset,
 	}
 }

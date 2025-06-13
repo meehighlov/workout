@@ -158,10 +158,6 @@ func (b *Builder) OptimizeView() *Builder {
 		}
 	}
 
-	if singleButtonRows%2 != 0 {
-		return b
-	}
-
 	optimized := b.Keyboard()
 
 	singleButtons := []*button{}

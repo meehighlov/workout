@@ -27,9 +27,6 @@ func (r *Repository) Get(ctx context.Context, filter *Filter, tx *gorm.DB) (*mod
 	}
 
 	err := q.First(element).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return element, nil
+	return element, err
 }

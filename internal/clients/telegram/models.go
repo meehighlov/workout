@@ -149,15 +149,7 @@ func (message *Message) GetCommand() string {
 }
 
 func (u *Update) GetChatIdStr() string {
-	if u.Message.Chat.Id != 0 {
-		return strconv.Itoa(u.Message.Chat.Id)
-	}
-
-	if u.CallbackQuery.Message.Chat.Id != 0 {
-		return strconv.Itoa(u.CallbackQuery.Message.Chat.Id)
-	}
-
-	return ""
+	return u.GetMessage().GetChatIdStr()
 }
 
 func (u *Update) IsCallback() bool {
@@ -165,15 +157,19 @@ func (u *Update) IsCallback() bool {
 }
 
 func (u *Update) GetMessageIdStr() string {
+	return u.GetMessage().GetMessageIdStr()
+}
+
+func (u *Update) GetMessage() *Message {
 	if u.Message.MessageId != 0 {
-		return u.Message.GetMessageIdStr()
+		return &u.Message
 	}
 
-	if u.CallbackQuery.Message.MessageId != 0 {
-		return u.CallbackQuery.Message.GetMessageIdStr()
+	if u.IsCallback() {
+		return &u.CallbackQuery.Message
 	}
 
-	return ""
+	return &u.Message
 }
 
 type Document struct {
