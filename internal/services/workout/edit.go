@@ -8,11 +8,32 @@ import (
 )
 
 func (s *Service) Edit(ctx context.Context, update *telegram.Update) error {
-	s.clients.Telegram.Reply(ctx, "Введите новое название тренировки", update)
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+	keyboard.AppendAsLine(
+		keyboard.NewButton(s.constants.BUTTON_TEXT_NAME, s.builders.CallbackDataBuilder.Build("name", "edit_w_req", "0").String()),
+		keyboard.NewButton(s.constants.BUTTON_TEXT_DRILLS, s.builders.CallbackDataBuilder.Build("drills", s.constants.COMMAND_EDIT_WORKOUT_DRILLS, "0").String()),
+	)
 
 	params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
 	s.clients.Cache.AppendText(update.GetChatIdStr(), params.ID)
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE)
+
+	s.clients.Telegram.Reply(ctx, "Что будем редактировать?", update, telegram.WithReplyMurkup(keyboard.Murkup()))
+
+	return nil
+}
+
+func (s *Service) EditRequest(ctx context.Context, update *telegram.Update) error {
+	s.clients.Telegram.Reply(ctx, "Введите новое значение", update)
+
+	params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
+
+	nextHandler := ""
+	switch params.ID {
+	case "name":
+		nextHandler = s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE
+	}
+
+	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), nextHandler)
 
 	return nil
 }

@@ -7,11 +7,21 @@ import (
 	"time"
 )
 
+type WorkoutHolder interface {
+	GetID() string
+	GetDrills() []string
+}
+
+type Workout struct {
+	ID     string   `json:"id"`
+	Drills []string `json:"drills"`
+}
+
 type ChatContext struct {
-	ChatId          string   `json:"chatId"`
-	UserResponses   []string `json:"userResponses"`
-	WorkoutElements []string `json:"workoutElements"`
-	NextHandler     string   `json:"nextHandler"`
+	ChatId        string   `json:"chatId"`
+	UserResponses []string `json:"userResponses"`
+	Workout       *Workout `json:"workout"`
+	NextHandler   string   `json:"nextHandler"`
 }
 
 func newChatContext(chatId string) *ChatContext {
@@ -39,7 +49,10 @@ func (ctx *ChatContext) SetNextHandler(nextHandler string) string {
 func (ctx *ChatContext) reset() error {
 	ctx.NextHandler = ""
 	ctx.UserResponses = []string{}
-	ctx.WorkoutElements = []string{}
+	ctx.Workout = &Workout{
+		ID:     "",
+		Drills: []string{},
+	}
 	return nil
 }
 
@@ -106,7 +119,13 @@ func (c *Client) AppendWorkoutElement(chatId string, workoutElement string) erro
 		return errors.New("chat context not found")
 	}
 
-	ctx.WorkoutElements = append(ctx.WorkoutElements, workoutElement)
+	if ctx.Workout == nil {
+		ctx.Workout = &Workout{
+			ID:     "",
+			Drills: []string{},
+		}
+	}
+	ctx.Workout.Drills = append(ctx.Workout.Drills, workoutElement)
 	return c.saveChatContext(ctx)
 }
 
@@ -116,11 +135,45 @@ func (c *Client) PopWorkoutElement(chatId string) error {
 		return errors.New("chat context not found")
 	}
 
-	if len(ctx.WorkoutElements) == 0 {
+	if ctx.Workout == nil {
 		return nil
 	}
 
-	ctx.WorkoutElements = ctx.WorkoutElements[:len(ctx.WorkoutElements)-1]
+	if len(ctx.Workout.Drills) == 0 {
+		return nil
+	}
+
+	ctx.Workout.Drills = ctx.Workout.Drills[:len(ctx.Workout.Drills)-1]
+	return c.saveChatContext(ctx)
+}
+
+func (c *Client) SetWorkoutID(chatId string, workoutID string) error {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return errors.New("chat context not found")
+	}
+
+	ctx.Workout.ID = workoutID
+	return c.saveChatContext(ctx)
+}
+
+func (c *Client) GetWorkoutID(chatId string) string {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return ""
+	}
+
+	return ctx.Workout.ID
+}
+
+func (c *Client) SetWorkoutElements(chatId string, holder WorkoutHolder) error {
+	ctx := c.GetOrCreateChatContext(chatId)
+	if ctx == nil {
+		return errors.New("chat context not found")
+	}
+
+	ctx.Workout.Drills = holder.GetDrills()
+	ctx.Workout.ID = holder.GetID()
 	return c.saveChatContext(ctx)
 }
 
@@ -130,7 +183,7 @@ func (c *Client) GetWorkoutElements(chatId string) []string {
 		return nil
 	}
 
-	return ctx.WorkoutElements
+	return ctx.Workout.Drills
 }
 
 func (c *Client) GetTexts(chatId string) []string {

@@ -7,6 +7,7 @@ import (
 	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/repositories/models"
 	"github.com/meehighlov/workout/internal/repositories/user"
+	"github.com/meehighlov/workout/internal/repositories/workout"
 )
 
 func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) error {
@@ -32,16 +33,24 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 		return nil
 	}
 
-	workoutID := uuid.New()
-
-	workout := &models.Workout{
-		ID:     workoutID,
+	workoutUpdate := &models.Workout{
+		ID:     uuid.New(),
 		Name:   s.builders.ShortIdBuilder.Build(),
 		UserID: user.ID,
 		Drills: drills,
 	}
 
-	err = s.repositories.Workout.Save(ctx, workout, nil)
+	workoutID := s.clients.Cache.GetWorkoutID(update.GetChatIdStr())
+	if workoutID != "" {
+		existWorkout, err := s.repositories.Workout.Get(ctx, &workout.Filter{ID: workoutID}, nil)
+		if err != nil {
+			return err
+		}
+		workoutUpdate = existWorkout
+		workoutUpdate.Drills = drills
+	}
+
+	err = s.repositories.Workout.Save(ctx, workoutUpdate, nil)
 	if err != nil {
 		return err
 	}
@@ -49,7 +58,7 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 	s.clients.Cache.Reset(update.GetChatIdStr())
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
-	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_OPEN, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_INFO_WORKOUT, "0").String()))
+	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_OPEN, s.builders.CallbackDataBuilder.Build(workoutUpdate.ID.String(), s.constants.COMMAND_INFO_WORKOUT, "0").String()))
 	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_ADD, s.builders.CallbackDataBuilder.Build(user.ID.String(), s.constants.COMMAND_NEW_WORKOUT, "0").String()))
 
 	_, err = s.clients.Telegram.Edit(ctx, s.constants.WORKOUT_SAVED_MESSAGE, update, telegram.WithReplyMurkup(keyboard.Murkup()))
