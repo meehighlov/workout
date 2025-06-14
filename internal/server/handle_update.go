@@ -109,13 +109,26 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		return s.services.Element.Delete(ctx, update)
 	case s.constants.COMMAND_DELETE_ELEMENT_CONFIRM:
 		return s.services.Element.DeleteConfirm(ctx, update)
-	case s.constants.COMMAND_NEW_WORKOUT, s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT, s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_CONTROL, s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL:
+	case
+		s.constants.COMMAND_NEW_WORKOUT,
+		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT,
+		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_CONTROL,
+		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL,
+		s.constants.COMMAND_EDIT_WORKOUT_DRILLS:
 		return s.services.Element.ElementsSelectionWheel(ctx, update)
 	case s.constants.COMMAND_SAVE_WORKOUT:
 		return s.services.Workout.SaveWorkout(ctx, update)
 	case s.constants.COMMAND_LIST_WORKOUT, s.constants.COMMAND_WORKOUTS:
 		return s.services.Workout.ListWorkouts(ctx, update)
-	case s.constants.COMMAND_INFO_WORKOUT, s.constants.COMMAND_WORKOUT_PLUS_SET, s.constants.COMMAND_WORKOUT_MINUS_SET, s.constants.COMMAND_WORKOUT_NEXT_SET, s.constants.COMMAND_WORKOUT_PREV_SET, s.constants.COMMAND_WORKOUT_PLUS_REPS, s.constants.COMMAND_WORKOUT_MINUS_REPS:
+	case
+		s.constants.COMMAND_INFO_WORKOUT,
+		s.constants.COMMAND_WORKOUT_PLUS_SET,
+		s.constants.COMMAND_WORKOUT_MINUS_SET,
+		s.constants.COMMAND_WORKOUT_NEXT_SET,
+		s.constants.COMMAND_WORKOUT_PREV_SET,
+		s.constants.COMMAND_WORKOUT_PLUS_REPS,
+		s.constants.COMMAND_WORKOUT_MINUS_REPS,
+		s.constants.COMMAND_DRILL_EXEC:
 		return s.services.Workout.InfoWorkout(ctx, update)
 	case s.constants.COMMAND_DELETE_WORKOUT:
 		return s.services.Workout.Delete(ctx, update)
@@ -125,6 +138,8 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		return s.services.Workout.Edit(ctx, update)
 	case s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE:
 		return s.services.Workout.EditNameSave(ctx, update)
+	case "edit_w_req":
+		return s.services.Workout.EditRequest(ctx, update)
 	default:
 		return nil
 	}

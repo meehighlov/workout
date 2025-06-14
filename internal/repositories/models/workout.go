@@ -23,6 +23,18 @@ func (*Workout) TableName() string {
 	return "workout"
 }
 
+func (w *Workout) GetID() string {
+	return w.ID.String()
+}
+
+func (w *Workout) GetDrills() []string {
+	drills := []string{}
+	for _, drill := range w.Drills {
+		drills = append(drills, drill.ElementName)
+	}
+	return drills
+}
+
 type DrillSet struct {
 	RepetitionCount int `json:"repetition_count"`
 }

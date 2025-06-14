@@ -18,8 +18,6 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		return err
 	}
 
-	keyboard := s.builders.KeyboardBuilder.Keyboard()
-
 	offset, _ := strconv.Atoi(params.Offset)
 	nextOffset := offset + 1
 	prevOffset := offset - 1
@@ -29,11 +27,6 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 	if prevOffset < 0 {
 		prevOffset = len(workout.Drills) - 1
 	}
-
-	buttonNextElement := keyboard.NewButton(s.constants.BUTTON_TEXT_NEXT_ELEMENT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_INFO_WORKOUT, strconv.Itoa(nextOffset)).String())
-	buttonPrevElement := keyboard.NewButton(s.constants.BUTTON_TEXT_PREV_ELEMENT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_INFO_WORKOUT, strconv.Itoa(prevOffset)).String())
-	keyboard.
-		AppendAsLine(buttonPrevElement, buttonNextElement)
 
 	header := fmt.Sprintf("🏃 %s, всего упражнений %d\n\n", workout.Name, len(workout.Drills))
 	drill := workout.Drills[offset]
@@ -83,26 +76,7 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		}
 	}
 
-	if len(drill.Sets) > 0 {
-		currentSet := drill.Sets[drill.CurrentlyObesrvableSet]
-		drillSet := fmt.Sprintf("Текущий подход %d\n", drill.CurrentlyObesrvableSet+1)
-
-		reps := fmt.Sprintf("Повторения в подходе %d\n", currentSet.RepetitionCount)
-		header += drillSet
-		header += reps
-
-		newSetButton := keyboard.NewButton("+ подход", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_SET, strconv.Itoa(offset)).String())
-		removeSetButton := keyboard.NewButton("- подход", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_SET, strconv.Itoa(offset)).String())
-		nextSetButton := keyboard.NewButton("подход >", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_NEXT_SET, strconv.Itoa(offset)).String())
-		prevSetButton := keyboard.NewButton("< подход", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PREV_SET, strconv.Itoa(offset)).String())
-		plusRepsButton := keyboard.NewButton("+ повторения", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_REPS, strconv.Itoa(offset)).String())
-		minusRepsButton := keyboard.NewButton("- повторения", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_REPS, strconv.Itoa(offset)).String())
-		keyboard.
-			AppendAsLine(minusRepsButton, plusRepsButton).
-			AppendAsLine(prevSetButton, removeSetButton, newSetButton, nextSetButton)
-	} else {
-		keyboard.AppendAsLine(keyboard.NewButton("+ подход", s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_SET, strconv.Itoa(offset)).String()))
-	}
+	s.clients.Cache.SetWorkoutElements(update.GetChatIdStr(), workout)
 
 	workout.Drills[offset] = drill
 	err = s.repositories.Workout.Save(ctx, workout, nil)
@@ -110,7 +84,46 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		return err
 	}
 
-	header += fmt.Sprintf("Подходов в упражнении %d", len(drill.Sets))
+	header += fmt.Sprintf("Подходов в упражнении %d\n", len(drill.Sets))
+
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+
+	if params.Command != s.constants.COMMAND_INFO_WORKOUT {
+		msg := fmt.Sprintf("💪 %s\n\n", drill.ElementName)
+
+		newSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_SETS_INCREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_SET, strconv.Itoa(offset)).String())
+		removeSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_SETS_DECREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_SET, strconv.Itoa(offset)).String())
+		nextSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_NEXT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_NEXT_SET, strconv.Itoa(offset)).String())
+		prevSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_PREV, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PREV_SET, strconv.Itoa(offset)).String())
+		plusRepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_REPS_INCREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_REPS, strconv.Itoa(offset)).String())
+		minusRepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_REPS_DECREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_REPS, strconv.Itoa(offset)).String())
+
+		if len(drill.Sets) > 0 {
+			currentSet := drill.Sets[drill.CurrentlyObesrvableSet]
+			drillSet := fmt.Sprintf("Подход %d\n", drill.CurrentlyObesrvableSet+1)
+			reps := fmt.Sprintf("Повторения %d\n", currentSet.RepetitionCount)
+			msg += drillSet
+			msg += reps
+
+			keyboard.
+				AppendAsLine(prevSetButton, removeSetButton, newSetButton, nextSetButton).
+				AppendAsLine(minusRepsButton, plusRepsButton)
+		} else {
+			keyboard.AppendAsLine(newSetButton)
+		}
+
+		keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_INFO_WORKOUT, strconv.Itoa(offset)).String()))
+
+		_, err = s.clients.Telegram.Edit(ctx, msg, update, telegram.WithReplyMurkup(keyboard.Murkup()))
+		return err
+	} else {
+		keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_EXEC, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_DRILL_EXEC, strconv.Itoa(offset)).String()))
+	}
+
+	buttonNextElement := keyboard.NewButton(s.constants.BUTTON_TEXT_NEXT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_INFO_WORKOUT, strconv.Itoa(nextOffset)).String())
+	buttonPrevElement := keyboard.NewButton(s.constants.BUTTON_TEXT_PREV, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_INFO_WORKOUT, strconv.Itoa(prevOffset)).String())
+	keyboard.
+		PutFirstAsLine(buttonPrevElement, buttonNextElement)
 
 	buttonBack := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_LIST_WORKOUT, "0").String())
 	buttonEdit := keyboard.NewButton(s.constants.BUTTON_TEXT_EDIT, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_EDIT_WORKOUT, strconv.Itoa(offset)).String())

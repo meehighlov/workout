@@ -60,6 +60,9 @@ func (s *Service) ElementsSelectionWheel(ctx context.Context, update *telegram.U
 		return nil
 	}
 
+	drills := s.clients.Cache.GetWorkoutElements(update.GetChatIdStr())
+	msg += strings.Join(drills, "\n")
+
 	_, err = s.clients.Telegram.Reply(ctx, msg, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 	return err
 }

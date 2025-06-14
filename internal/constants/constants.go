@@ -10,6 +10,8 @@ type Constants struct {
 	ELEMENTS_LIST_MESSAGE            string
 	WORKOUT_SAVED_MESSAGE            string
 	WORKOUT_LIST_MESSAGE             string
+	WORKOUT_NOT_SAVED_MESSAGE        string
+	WORKOUT_DRILL_EXEC_MESSAGE       string
 
 	BUTTON_TEXT_WORKOUT_DRILL_SETS_INCREASE string
 	BUTTON_TEXT_WORKOUT_DRILL_SETS_DECREASE string
@@ -24,9 +26,11 @@ type Constants struct {
 	BUTTON_TEXT_NAME                        string
 	BUTTON_TEXT_LINK                        string
 	BUTTON_TEXT_SAVE                        string
-	BUTTON_TEXT_NEXT_ELEMENT                string
-	BUTTON_TEXT_PREV_ELEMENT                string
+	BUTTON_TEXT_NEXT                        string
+	BUTTON_TEXT_PREV                        string
 	BUTTON_TEXT_ERASE_ELEMENT               string
+	BUTTON_TEXT_EXEC                        string
+	BUTTON_TEXT_DRILLS                      string
 
 	COMMAND_START string
 
@@ -67,7 +71,8 @@ type Constants struct {
 	COMMAND_EDIT_WORKOUT                   string
 	COMMAND_EDIT_WORKOUT_NAME_SAVE         string
 	COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL   string
-	WORKOUT_NOT_SAVED_MESSAGE              string
+	COMMAND_DRILL_EXEC                     string
+	COMMAND_EDIT_WORKOUT_DRILLS string
 }
 
 func New(cfg *config.Config) *Constants {
@@ -110,12 +115,12 @@ func New(cfg *config.Config) *Constants {
 		COMMAND_LIST_WORKOUT:                    "workout_list",
 		COMMAND_WORKOUTS:                        "/workouts",
 		WORKOUT_LIST_MESSAGE:                    "Тренировки",
-		BUTTON_TEXT_NEXT_ELEMENT:                "элемент >",
-		BUTTON_TEXT_PREV_ELEMENT:                "< элемент",
-		BUTTON_TEXT_WORKOUT_DRILL_SETS_INCREASE: "+ подход",
-		BUTTON_TEXT_WORKOUT_DRILL_SETS_DECREASE: "- подход",
-		BUTTON_TEXT_WORKOUT_DRILL_REPS_INCREASE: "+ повторение",
-		BUTTON_TEXT_WORKOUT_DRILL_REPS_DECREASE: "- повторение",
+		BUTTON_TEXT_NEXT:                        "▶️",
+		BUTTON_TEXT_PREV:                        "◀️",
+		BUTTON_TEXT_WORKOUT_DRILL_SETS_INCREASE: "🆕",
+		BUTTON_TEXT_WORKOUT_DRILL_SETS_DECREASE: "🗑",
+		BUTTON_TEXT_WORKOUT_DRILL_REPS_INCREASE: "➕",
+		BUTTON_TEXT_WORKOUT_DRILL_REPS_DECREASE: "➖",
 		COMMAND_INFO_WORKOUT_PLUS_SETS:          "workout_ps",
 		COMMAND_INFO_WORKOUT_MINUS_SETS:         "workout_ms",
 		COMMAND_INFO_WORKOUT_PLUS_REPS:          "workout_pr",
@@ -133,5 +138,9 @@ func New(cfg *config.Config) *Constants {
 		COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL:    "atw_rm_drill",
 		BUTTON_TEXT_ERASE_ELEMENT:               "✖️",
 		WORKOUT_NOT_SAVED_MESSAGE:               "Тренировка не сохранена - нет упражнений",
+		COMMAND_DRILL_EXEC:                      "drill_exec",
+		BUTTON_TEXT_EXEC:                        "выполнение",
+		BUTTON_TEXT_DRILLS:                      "упражнения",
+		COMMAND_EDIT_WORKOUT_DRILLS:             "edit_w_drills",
 	}
 }
