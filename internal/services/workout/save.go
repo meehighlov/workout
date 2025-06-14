@@ -7,7 +7,6 @@ import (
 	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/repositories/models"
 	"github.com/meehighlov/workout/internal/repositories/user"
-	"github.com/meehighlov/workout/internal/repositories/workout"
 )
 
 func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) error {
@@ -38,16 +37,6 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 		Name:   s.builders.ShortIdBuilder.Build(),
 		UserID: user.ID,
 		Drills: drills,
-	}
-
-	workoutID := s.clients.Cache.GetWorkoutID(update.GetChatIdStr())
-	if workoutID != "" {
-		existWorkout, err := s.repositories.Workout.Get(ctx, &workout.Filter{ID: workoutID}, nil)
-		if err != nil {
-			return err
-		}
-		workoutUpdate = existWorkout
-		workoutUpdate.Drills = drills
 	}
 
 	err = s.repositories.Workout.Save(ctx, workoutUpdate, nil)

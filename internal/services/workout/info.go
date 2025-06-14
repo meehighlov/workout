@@ -28,10 +28,10 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		prevOffset = len(workout.Drills) - 1
 	}
 
-	header := fmt.Sprintf("🏃 %s, всего упражнений %d\n\n", workout.Name, len(workout.Drills))
+	header := fmt.Sprintf("🏃 %s\n\n", workout.Name)
 	drill := workout.Drills[offset]
 
-	drillText := fmt.Sprintf("💪 %s\n\n", drill.ElementName)
+	drillText := fmt.Sprintf("💪 %d/%d %s\n\n", offset+1, len(workout.Drills), drill.ElementName)
 	header += drillText
 
 	if params.Command == s.constants.COMMAND_WORKOUT_PLUS_SET {
@@ -76,8 +76,6 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		}
 	}
 
-	s.clients.Cache.SetWorkoutElements(update.GetChatIdStr(), workout)
-
 	workout.Drills[offset] = drill
 	err = s.repositories.Workout.Save(ctx, workout, nil)
 	if err != nil {
@@ -100,13 +98,14 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 
 		if len(drill.Sets) > 0 {
 			currentSet := drill.Sets[drill.CurrentlyObesrvableSet]
-			drillSet := fmt.Sprintf("Подход %d\n", drill.CurrentlyObesrvableSet+1)
+			drillSet := fmt.Sprintf("Подход %d/%d\n", drill.CurrentlyObesrvableSet+1, len(drill.Sets))
 			reps := fmt.Sprintf("Повторения %d\n", currentSet.RepetitionCount)
 			msg += drillSet
 			msg += reps
 
 			keyboard.
-				AppendAsLine(prevSetButton, removeSetButton, newSetButton, nextSetButton).
+				AppendAsLine(prevSetButton, nextSetButton).
+				AppendAsLine(removeSetButton, newSetButton).
 				AppendAsLine(minusRepsButton, plusRepsButton)
 		} else {
 			keyboard.AppendAsLine(newSetButton)
