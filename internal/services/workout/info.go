@@ -156,23 +156,23 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 func (s *Service) WeightButtons(workout *models.Workout, offset int) *inlinekeyboard.Builder {
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 
-	kg025plus := keyboard.NewButton("+0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.25p", strconv.Itoa(offset)).String())
-	kg025minus := keyboard.NewButton("-0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.25m", strconv.Itoa(offset)).String())
+	kg025plus := keyboard.NewButton("+0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS, strconv.Itoa(offset)).String())
+	kg025minus := keyboard.NewButton("-0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS, strconv.Itoa(offset)).String())
 
-	kg05plus := keyboard.NewButton("+0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.5p", strconv.Itoa(offset)).String())
-	kg05minus := keyboard.NewButton("-0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.5m", strconv.Itoa(offset)).String())
+	kg05plus := keyboard.NewButton("+0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS, strconv.Itoa(offset)).String())
+	kg05minus := keyboard.NewButton("-0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS, strconv.Itoa(offset)).String())
 
-	kg1plus := keyboard.NewButton("+1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_1p", strconv.Itoa(offset)).String())
-	kg1minus := keyboard.NewButton("-1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_1m", strconv.Itoa(offset)).String())
+	kg1plus := keyboard.NewButton("+1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS, strconv.Itoa(offset)).String())
+	kg1minus := keyboard.NewButton("-1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS, strconv.Itoa(offset)).String())
 
-	kg5plus := keyboard.NewButton("+5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_5p", strconv.Itoa(offset)).String())
-	kg5minus := keyboard.NewButton("-5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_5m", strconv.Itoa(offset)).String())
+	kg5plus := keyboard.NewButton("+5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS, strconv.Itoa(offset)).String())
+	kg5minus := keyboard.NewButton("-5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS, strconv.Itoa(offset)).String())
 
-	kg10plus := keyboard.NewButton("+10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_10p", strconv.Itoa(offset)).String())
-	kg10minus := keyboard.NewButton("-10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_10m", strconv.Itoa(offset)).String())
+	kg10plus := keyboard.NewButton("+10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS, strconv.Itoa(offset)).String())
+	kg10minus := keyboard.NewButton("-10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS, strconv.Itoa(offset)).String())
 
-	kg20plus := keyboard.NewButton("+20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_20p", strconv.Itoa(offset)).String())
-	kg20minus := keyboard.NewButton("-20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_20m", strconv.Itoa(offset)).String())
+	kg20plus := keyboard.NewButton("+20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS, strconv.Itoa(offset)).String())
+	kg20minus := keyboard.NewButton("-20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS, strconv.Itoa(offset)).String())
 
 	keyboard.
 		AppendAsLine(kg025minus, kg05minus, kg025plus, kg05plus).
