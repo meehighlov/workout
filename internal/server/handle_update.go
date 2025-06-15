@@ -128,7 +128,19 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		s.constants.COMMAND_WORKOUT_PREV_SET,
 		s.constants.COMMAND_WORKOUT_PLUS_REPS,
 		s.constants.COMMAND_WORKOUT_MINUS_REPS,
-		s.constants.COMMAND_DRILL_EXEC:
+		s.constants.COMMAND_DRILL_EXEC,
+		"tw_0.25p",
+		"tw_0.25m",
+		"tw_0.5p",
+		"tw_0.5m",
+		"tw_1p",
+		"tw_1m",
+		"tw_5p",
+		"tw_5m",
+		"tw_10p",
+		"tw_10m",
+		"tw_20p",
+		"tw_20m":
 		return s.services.Workout.InfoWorkout(ctx, update)
 	case s.constants.COMMAND_DELETE_WORKOUT:
 		return s.services.Workout.Delete(ctx, update)

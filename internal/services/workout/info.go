@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	inlinekeyboard "github.com/meehighlov/workout/internal/builders/inline_keyboard"
 	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/repositories/models"
 	"github.com/meehighlov/workout/internal/repositories/workout"
@@ -36,7 +38,7 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 
 	if params.Command == s.constants.COMMAND_WORKOUT_PLUS_SET {
 		newSet := models.DrillSet{
-			RepetitionCount: 0,
+			Weight: "0.0",
 		}
 		drill.Sets = append(drill.Sets, newSet)
 		drill.CurrentlyObesrvableSet = len(drill.Sets) - 1
@@ -76,6 +78,19 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		}
 	}
 
+	if strings.HasPrefix(params.Command, "tw_") {
+		weight := s.ParseWeight(params.Command)
+		prevWeight, _ := strconv.ParseFloat(
+			drill.Sets[drill.CurrentlyObesrvableSet].Weight, 64)
+
+		newWeight := prevWeight + weight
+		if newWeight < 0 {
+			newWeight = 0
+		}
+
+		drill.Sets[drill.CurrentlyObesrvableSet].Weight = strconv.FormatFloat(newWeight, 'f', -1, 64)
+	}
+
 	workout.Drills[offset] = drill
 	err = s.repositories.Workout.Save(ctx, workout, nil)
 	if err != nil {
@@ -100,13 +115,16 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 			currentSet := drill.Sets[drill.CurrentlyObesrvableSet]
 			drillSet := fmt.Sprintf("Подход %d/%d\n", drill.CurrentlyObesrvableSet+1, len(drill.Sets))
 			reps := fmt.Sprintf("Повторения %d\n", currentSet.RepetitionCount)
+			weight := fmt.Sprintf("Доп вес %s(кг)\n", currentSet.Weight)
 			msg += drillSet
 			msg += reps
+			msg += weight
 
 			keyboard.
 				AppendAsLine(prevSetButton, nextSetButton).
 				AppendAsLine(removeSetButton, newSetButton).
-				AppendAsLine(minusRepsButton, plusRepsButton)
+				AppendAsLine(minusRepsButton, plusRepsButton).
+				Append(s.WeightButtons(workout, offset))
 		} else {
 			keyboard.AppendAsLine(newSetButton)
 		}
@@ -133,4 +151,52 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 
 	_, err = s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 	return err
+}
+
+func (s *Service) WeightButtons(workout *models.Workout, offset int) *inlinekeyboard.Builder {
+	keyboard := s.builders.KeyboardBuilder.Keyboard()
+
+	kg025plus := keyboard.NewButton("+0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.25p", strconv.Itoa(offset)).String())
+	kg025minus := keyboard.NewButton("-0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.25m", strconv.Itoa(offset)).String())
+
+	kg05plus := keyboard.NewButton("+0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.5p", strconv.Itoa(offset)).String())
+	kg05minus := keyboard.NewButton("-0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_0.5m", strconv.Itoa(offset)).String())
+
+	kg1plus := keyboard.NewButton("+1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_1p", strconv.Itoa(offset)).String())
+	kg1minus := keyboard.NewButton("-1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_1m", strconv.Itoa(offset)).String())
+
+	kg5plus := keyboard.NewButton("+5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_5p", strconv.Itoa(offset)).String())
+	kg5minus := keyboard.NewButton("-5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_5m", strconv.Itoa(offset)).String())
+
+	kg10plus := keyboard.NewButton("+10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_10p", strconv.Itoa(offset)).String())
+	kg10minus := keyboard.NewButton("-10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_10m", strconv.Itoa(offset)).String())
+
+	kg20plus := keyboard.NewButton("+20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_20p", strconv.Itoa(offset)).String())
+	kg20minus := keyboard.NewButton("-20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), "tw_20m", strconv.Itoa(offset)).String())
+
+	keyboard.
+		AppendAsLine(kg025minus, kg05minus, kg025plus, kg05plus).
+		AppendAsLine(kg1minus, kg5minus, kg1plus, kg5plus).
+		AppendAsLine(kg10minus, kg20minus, kg10plus, kg20plus)
+
+	return keyboard
+}
+
+func (s *Service) ParseWeight(rawWeightData string) float64 {
+	weightData := strings.Split(rawWeightData, "_")
+	weight := weightData[1]
+	action := string(weight[len(weight)-1])
+	weightWithoutAction := strings.Replace(weight, action, "", 1)
+
+	kg, _ := strconv.ParseFloat(weightWithoutAction, 64)
+
+	if action == "p" {
+		return kg
+	}
+
+	if action == "m" {
+		return (-1) * kg
+	}
+
+	return 0
 }

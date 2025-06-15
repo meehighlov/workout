@@ -31,6 +31,7 @@ type Constants struct {
 	BUTTON_TEXT_ERASE_ELEMENT               string
 	BUTTON_TEXT_EXEC                        string
 	BUTTON_TEXT_DRILLS                      string
+	BUTTON_TEXT_WORKOUT_DRILL_WEIGHT_TUNE   string
 
 	COMMAND_START string
 
@@ -72,7 +73,8 @@ type Constants struct {
 	COMMAND_EDIT_WORKOUT_NAME_SAVE         string
 	COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL   string
 	COMMAND_DRILL_EXEC                     string
-	COMMAND_EDIT_WORKOUT_DRILLS string
+	COMMAND_EDIT_WORKOUT_DRILLS            string
+	COMMAND_WORKOUT_TUNE_WEIGHT            string
 }
 
 func New(cfg *config.Config) *Constants {
@@ -142,5 +144,7 @@ func New(cfg *config.Config) *Constants {
 		BUTTON_TEXT_EXEC:                        "выполнение",
 		BUTTON_TEXT_DRILLS:                      "упражнения",
 		COMMAND_EDIT_WORKOUT_DRILLS:             "edit_w_drills",
+		BUTTON_TEXT_WORKOUT_DRILL_WEIGHT_TUNE:   "доп вес",
+		COMMAND_WORKOUT_TUNE_WEIGHT:             "w_tune_we",
 	}
 }
