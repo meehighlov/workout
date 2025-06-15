@@ -34,6 +34,8 @@ func (r *Repository) List(ctx context.Context, filter *Filter) ([]*models.Elemen
 		}
 	}
 
+	query = query.Order("created_at DESC")
+
 	err := query.Find(&elements).Error
 	if err != nil {
 		return nil, err

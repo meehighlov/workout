@@ -31,7 +31,7 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 	}
 
 	header := fmt.Sprintf("🏃 %s\n\n", workout.Name)
-	drill := workout.Drills[offset]
+	drill := workout.Drills[s.floorIndex(offset, len(workout.Drills))]
 
 	drillText := fmt.Sprintf("💪 %d/%d %s\n\n", offset+1, len(workout.Drills), drill.ElementName)
 	header += drillText
@@ -91,7 +91,7 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		drill.Sets[drill.CurrentlyObesrvableSet].Weight = strconv.FormatFloat(newWeight, 'f', -1, 64)
 	}
 
-	workout.Drills[offset] = drill
+	workout.Drills[s.floorIndex(offset, len(workout.Drills))] = drill
 	err = s.repositories.Workout.Save(ctx, workout, nil)
 	if err != nil {
 		return err
@@ -151,6 +151,19 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 
 	_, err = s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 	return err
+}
+
+func (s *Service) floorIndex(index int, length int) int {
+	if index >= length {
+		return length - 1
+	}
+	if index < 0 {
+		return 0
+	}
+	if index >= 0 && index < length {
+		return index
+	}
+	return 0
 }
 
 func (s *Service) WeightButtons(workout *models.Workout, offset int) *inlinekeyboard.Builder {
