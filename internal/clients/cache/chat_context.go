@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
 )
 
 type WorkoutHolder interface {
@@ -56,11 +55,8 @@ func (ctx *ChatContext) reset() error {
 	return nil
 }
 
-func (c *Client) GetOrCreateChatContext(chatId string) *ChatContext {
-	ctxChatCreation, cancel := context.WithTimeout(c.ctx, 3*time.Second)
-	defer cancel()
-
-	val, err := c.Redis.Get(ctxChatCreation, chatId).Result()
+func (c *Client) GetOrCreateChatContext(ctx context.Context, chatId string) *ChatContext {
+	val, err := c.Redis.Get(ctx, chatId).Result()
 
 	if err == nil {
 		var ctx ChatContext
@@ -72,135 +68,132 @@ func (c *Client) GetOrCreateChatContext(chatId string) *ChatContext {
 	newCtx := newChatContext(chatId)
 
 	jsonCtx, _ := json.Marshal(newCtx)
-	c.Redis.Set(ctxChatCreation, chatId, jsonCtx, c.CacheExpiration)
+	c.Redis.Set(ctx, chatId, jsonCtx, c.CacheExpiration)
 
 	return newCtx
 }
 
-func (c *Client) saveChatContext(ctx *ChatContext) error {
-	jsonCtx, err := json.Marshal(ctx)
+func (c *Client) saveChatContext(ctx context.Context, chatContext *ChatContext) error {
+	jsonCtx, err := json.Marshal(chatContext)
 	if err != nil {
 		return err
 	}
 
-	ctxSave, cancel := context.WithTimeout(c.ctx, 3*time.Second)
-	defer cancel()
-
-	return c.Redis.Set(ctxSave, ctx.ChatId, jsonCtx, c.CacheExpiration).Err()
+	return c.Redis.Set(ctx, chatContext.ChatId, jsonCtx, c.CacheExpiration).Err()
 }
 
-func (c *Client) SetNextHandler(chatId string, nextHandler string) error {
+func (c *Client) SetNextHandler(ctx context.Context, chatId string, nextHandler string) error {
 	if nextHandler == "" {
-		return c.Reset(chatId)
+		return c.Reset(ctx, chatId)
 	}
 
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	ctx.NextHandler = nextHandler
-	return c.saveChatContext(ctx)
+	chatContext.NextHandler = nextHandler
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) AppendText(chatId string, text string) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) AppendText(ctx context.Context, chatId string, text string) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	ctx.AppendText(text)
-	return c.saveChatContext(ctx)
+	chatContext.AppendText(text)
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) AppendWorkoutElement(chatId string, workoutElement string) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) AppendWorkoutElement(ctx context.Context, chatId string, workoutElement string) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	if ctx.Workout == nil {
-		ctx.Workout = &Workout{
+	if chatContext.Workout == nil {
+		chatContext.Workout = &Workout{
 			ID:     "",
 			Drills: []string{},
 		}
 	}
-	ctx.Workout.Drills = append(ctx.Workout.Drills, workoutElement)
-	return c.saveChatContext(ctx)
+	chatContext.Workout.Drills = append(chatContext.Workout.Drills, workoutElement)
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) PopWorkoutElement(chatId string) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) PopWorkoutElement(ctx context.Context, chatId string) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	if ctx.Workout == nil {
+	if chatContext.Workout == nil {
 		return nil
 	}
 
-	if len(ctx.Workout.Drills) == 0 {
+	if len(chatContext.Workout.Drills) == 0 {
 		return nil
 	}
 
-	ctx.Workout.Drills = ctx.Workout.Drills[:len(ctx.Workout.Drills)-1]
-	return c.saveChatContext(ctx)
+	chatContext.Workout.Drills = chatContext.Workout.Drills[:len(chatContext.Workout.Drills)-1]
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) SetWorkoutID(chatId string, workoutID string) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) SetWorkoutID(ctx context.Context, chatId string, workoutID string) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	ctx.Workout.ID = workoutID
-	return c.saveChatContext(ctx)
+	chatContext.Workout.ID = workoutID
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) GetWorkoutID(chatId string) string {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) GetWorkoutID(ctx context.Context, chatId string) string {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return ""
 	}
 
-	return ctx.Workout.ID
+	return chatContext.Workout.ID
 }
 
-func (c *Client) SetWorkoutElements(chatId string, holder WorkoutHolder) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) SetWorkoutElements(ctx context.Context, chatId string, holder WorkoutHolder) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	ctx.Workout.Drills = holder.GetDrills()
-	ctx.Workout.ID = holder.GetID()
-	return c.saveChatContext(ctx)
+	chatContext.Workout.Drills = holder.GetDrills()
+	chatContext.Workout.ID = holder.GetID()
+	return c.saveChatContext(ctx, chatContext)
 }
 
-func (c *Client) GetWorkoutElements(chatId string) []string {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) GetWorkoutElements(ctx context.Context, chatId string) []string {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return nil
 	}
 
-	return ctx.Workout.Drills
+	return chatContext.Workout.Drills
 }
 
-func (c *Client) GetTexts(chatId string) []string {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) GetTexts(ctx context.Context, chatId string) []string {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return nil
 	}
 
-	return ctx.GetTexts()
+	return chatContext.GetTexts()
 }
 
-func (c *Client) Reset(chatId string) error {
-	ctx := c.GetOrCreateChatContext(chatId)
-	if ctx == nil {
+func (c *Client) Reset(ctx context.Context, chatId string) error {
+	chatContext := c.GetOrCreateChatContext(ctx, chatId)
+	if chatContext == nil {
 		return errors.New("chat context not found")
 	}
 
-	ctx.reset()
-	return c.saveChatContext(ctx)
+	chatContext.reset()
+	return c.saveChatContext(ctx, chatContext)
 }

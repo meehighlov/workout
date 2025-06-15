@@ -19,11 +19,13 @@ import (
 type UpdatesChannel chan Update
 
 type Client struct {
-	host       string
-	token      string
-	basePath   string
-	httpClient *http.Client
-	logger     *slog.Logger
+	host               string
+	token              string
+	basePath           string
+	httpClient         *http.Client
+	fastHttpClient     *http.Client // Для быстрых операций типа answerCallbackQuery
+	longPollHttpClient *http.Client // Для long polling операций типа getUpdates
+	logger             *slog.Logger
 }
 
 type SendMessageOption func(q url.Values) error
@@ -75,15 +77,18 @@ func setupLogger(logger *slog.Logger) *slog.Logger {
 }
 
 func New(cfg *config.Config, logger *slog.Logger) *Client {
-	// http client timeout > telegram getUpdates timeout
-	httpClient := &http.Client{Timeout: 25 * time.Second}
+	httpClient := &http.Client{Timeout: 10 * time.Second}
+	fastHttpClient := &http.Client{Timeout: 3 * time.Second}
+	longPollHttpClient := &http.Client{Timeout: 60 * time.Second}
 	host := "api.telegram.org"
 
 	return &Client{
-		token:      cfg.TelegramToken,
-		host:       host,
-		basePath:   "bot" + cfg.TelegramToken,
-		httpClient: httpClient,
+		token:              cfg.TelegramToken,
+		host:               host,
+		basePath:           "bot" + cfg.TelegramToken,
+		httpClient:         httpClient,
+		fastHttpClient:     fastHttpClient,
+		longPollHttpClient: longPollHttpClient,
 
 		// do we need turn off logger from outside?
 		logger: setupLogger(logger),
@@ -123,6 +128,90 @@ func (tc *Client) sendRequest(ctx context.Context, method string, query url.Valu
 		tc.logger.Error(
 			"Telegram client",
 			"sendRequest", "Bad request",
+			"method", method,
+			"Query params was", query,
+			"Response body", string(body),
+		)
+	}
+
+	return body, nil
+}
+
+func (tc *Client) sendFastRequest(ctx context.Context, method string, query url.Values) (data []byte, err error) {
+	defer func() { err = wrapIfErr("can't do fast request", err) }()
+
+	u := url.URL{
+		Scheme: "https",
+		Host:   tc.host,
+		Path:   path.Join(tc.basePath, method),
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.RawQuery = query.Encode()
+
+	resp, err := tc.fastHttpClient.Do(req)
+
+	if err != nil {
+		tc.logger.Error("error making fast request: " + err.Error())
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		tc.logger.Error(
+			"Telegram client",
+			"sendFastRequest", "Bad request",
+			"method", method,
+			"Query params was", query,
+			"Response body", string(body),
+		)
+	}
+
+	return body, nil
+}
+
+func (tc *Client) sendLongPollRequest(ctx context.Context, method string, query url.Values) (data []byte, err error) {
+	defer func() { err = wrapIfErr("can't do long poll request", err) }()
+
+	u := url.URL{
+		Scheme: "https",
+		Host:   tc.host,
+		Path:   path.Join(tc.basePath, method),
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.RawQuery = query.Encode()
+
+	resp, err := tc.longPollHttpClient.Do(req)
+
+	if err != nil {
+		tc.logger.Error("error making long poll request: " + err.Error())
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		tc.logger.Error(
+			"Telegram client",
+			"sendLongPollRequest", "Bad request",
 			"method", method,
 			"Query params was", query,
 			"Response body", string(body),
@@ -226,10 +315,13 @@ func (tc *Client) EditMessageText(ctx context.Context, chatId, messageId, text s
 }
 
 func (tc *Client) AnswerCallbackQuery(ctx context.Context, queryId string) error {
+	ctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer cancel()
+
 	q := url.Values{}
 	q.Add("callback_query_id", queryId)
 
-	_, err := tc.sendRequest(ctx, "answerCallbackQuery", q)
+	_, err := tc.sendFastRequest(ctx, "answerCallbackQuery", q)
 	if err != nil {
 		tc.logger.Error("answer callback query request error: " + err.Error())
 		return err
@@ -265,7 +357,7 @@ func (tc *Client) GetUpdates(ctx context.Context, offset int) (*UpdateResponse, 
 	q.Add("limit", strconv.Itoa(100))
 	q.Add("timeout", "60")
 
-	data, err := tc.sendRequest(ctx, "getUpdates", q)
+	data, err := tc.sendLongPollRequest(ctx, "getUpdates", q)
 	if err != nil {
 		return nil, err
 	}
@@ -284,15 +376,15 @@ func (tc *Client) GetUpdatesChannel(ctx context.Context) UpdatesChannel {
 	updatesChannelSize := 100
 	offset := -1
 
-	ch := make(chan Update, updatesChannelSize)
+	ch := make(UpdatesChannel, updatesChannelSize)
 
 	go func() {
 		for {
 			updates, err := tc.GetUpdates(ctx, offset)
 			if err != nil {
 				tc.logger.Error(err.Error())
-				tc.logger.Error("Failed to get updates, retrying in 3 seconds...")
-				time.Sleep(time.Millisecond * time.Duration(500))
+				tc.logger.Error("Failed to get updates, retrying in 100ms...")
+				time.Sleep(time.Millisecond * time.Duration(100))
 
 				continue
 			}

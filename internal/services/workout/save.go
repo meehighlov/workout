@@ -15,7 +15,7 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 		return err
 	}
 
-	elements := s.clients.Cache.GetWorkoutElements(update.GetChatIdStr())
+	elements := s.clients.Cache.GetWorkoutElements(ctx, update.GetChatIdStr())
 	drills := models.Drills{}
 	for _, element := range elements {
 		drills = append(drills, models.Drill{
@@ -44,7 +44,7 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 		return err
 	}
 
-	s.clients.Cache.Reset(update.GetChatIdStr())
+	s.clients.Cache.Reset(ctx, update.GetChatIdStr())
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_OPEN, s.builders.CallbackDataBuilder.Build(workoutUpdate.ID.String(), s.constants.COMMAND_INFO_WORKOUT, "0").String()))

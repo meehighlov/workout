@@ -9,8 +9,9 @@ import (
 )
 
 func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) error {
-	ctx, cancel := context.WithTimeout(ctx, s.handleTimeout)
-	defer cancel()
+	if update.IsCallback() {
+		s.clients.Telegram.AnswerCallbackQuery(ctx, update.CallbackQuery.Id)
+	}
 
 	username := update.Message.From.Username
 	if username == "" {
@@ -22,7 +23,7 @@ func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) erro
 		return nil
 	}
 
-	chatContext := s.clients.Cache.GetOrCreateChatContext(update.GetChatIdStr())
+	chatContext := s.clients.Cache.GetOrCreateChatContext(ctx, update.GetChatIdStr())
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -32,7 +33,7 @@ func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) erro
 				"stack", string(debug.Stack()),
 				"update", update,
 			)
-			s.clients.Cache.Reset(update.GetChatIdStr())
+			s.clients.Cache.Reset(ctx, update.GetChatIdStr())
 
 			chatId := update.GetChatIdStr()
 			if chatId != "" {
@@ -53,12 +54,10 @@ func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) erro
 
 	if command_ != "" {
 		command = command_
-		s.clients.Cache.Reset(update.GetChatIdStr())
+		s.clients.Cache.Reset(ctx, update.GetChatIdStr())
 	} else {
 		if update.CallbackQuery.Id != "" {
 			params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
-
-			s.clients.Telegram.AnswerCallbackQuery(ctx, update.CallbackQuery.Id)
 
 			s.logger.Info("CallbackQueryHandler", "command", params.Command, "chat id", update.GetChatIdStr())
 			command = params.Command
@@ -74,7 +73,7 @@ func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) erro
 
 	err := s.handle(ctx, update, command)
 	if err != nil {
-		s.clients.Cache.Reset(update.GetChatIdStr())
+		s.clients.Cache.Reset(ctx, update.GetChatIdStr())
 		s.logger.Error("Root handler", "error", err.Error(), "chat id", update.GetChatIdStr(), "update id", update.UpdateId)
 	} else {
 		s.logger.Info("Root handler", "success", command, "chat id", update.GetChatIdStr(), "update id", update.UpdateId)

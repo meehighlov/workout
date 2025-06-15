@@ -66,10 +66,10 @@ func (s *Server) Start() error {
 		Handler: mux,
 	}
 
-	s.wg.Add(1)
+	s.wgWebServer.Add(1)
 
 	go func() {
-		defer s.wg.Done()
+		defer s.wgWebServer.Done()
 
 		if s.cfg.TelegramUseTLS {
 			s.logger.Info("Starting webhook server with TLS", "addr", s.webServer.Addr)
@@ -109,7 +109,7 @@ func (s *Server) Stop() error {
 			s.logger.Error("Server shutdown error", "error", err)
 		}
 
-		s.wg.Wait()
+		s.wgWebServer.Wait()
 		s.logger.Info("Webhook server stopped")
 	}
 
@@ -136,9 +136,18 @@ func (s *Server) Polling() error {
 
 	updates := s.clients.Telegram.GetUpdatesChannel(ctx)
 
-	for update := range updates {
-		go s.HandleUpdate(ctx, &update)
+	s.logger.Info("Starting polling mode with worker pool", "workers", s.workerCount)
+
+	s.workerCtx, s.workerCancel = context.WithCancel(context.Background())
+
+	s.logger.Info("Starting worker pool", "workers", s.workerCount)
+
+	for i := range s.workerCount {
+		s.wgWorkerPool.Add(1)
+		go s.worker(i, &updates)
 	}
+
+	s.wgWorkerPool.Wait()
 
 	return nil
 }

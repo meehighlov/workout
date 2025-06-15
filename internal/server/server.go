@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/meehighlov/workout/internal/builders"
 	"github.com/meehighlov/workout/internal/clients"
+	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/config"
 	"github.com/meehighlov/workout/internal/constants"
 	"github.com/meehighlov/workout/internal/services"
@@ -22,9 +24,15 @@ type Server struct {
 	builders      *builders.Builders
 	allowedUsers  []string
 	webServer     *http.Server
-	wg            sync.WaitGroup
+	wgWebServer   sync.WaitGroup
 	shutdownChan  chan struct{}
 	cfg           *config.Config
+
+	wgWorkerPool  sync.WaitGroup
+	workerCount  int
+	updatesChan  *telegram.UpdatesChannel
+	workerCtx    context.Context
+	workerCancel context.CancelFunc
 }
 
 func New(
@@ -45,6 +53,10 @@ func New(
 		allowedUsers:  cfg.AllowedUsers(),
 		cfg:           cfg,
 		shutdownChan:  make(chan struct{}),
-		wg:            sync.WaitGroup{},
+		wgWebServer:   sync.WaitGroup{},
+		wgWorkerPool:  sync.WaitGroup{},
+		workerCount:   cfg.WorkerCount,
+		workerCtx:     context.Background(),
+		workerCancel:  func() {},
 	}
 }

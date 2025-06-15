@@ -15,8 +15,8 @@ func (s *Service) Edit(ctx context.Context, update *telegram.Update) error {
 	)
 
 	params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
-	s.clients.Cache.AppendText(update.GetChatIdStr(), params.ID)
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), s.constants.COMMAND_EDIT_ELEMENT_REQUEST)
+	s.clients.Cache.AppendText(ctx, update.GetChatIdStr(), params.ID)
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), s.constants.COMMAND_EDIT_ELEMENT_REQUEST)
 
 	s.clients.Telegram.Reply(ctx, "Что будем редактировать?", update, telegram.WithReplyMurkup(keyboard.Murkup()))
 
@@ -36,13 +36,13 @@ func (s *Service) EditRequest(ctx context.Context, update *telegram.Update) erro
 		nextHandler = s.constants.COMMAND_EDIT_ELEMENT_LINK_SAVE
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), nextHandler)
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), nextHandler)
 
 	return nil
 }
 
 func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) error {
-	elementId := s.clients.Cache.GetTexts(update.GetChatIdStr())[0]
+	elementId := s.clients.Cache.GetTexts(ctx, update.GetChatIdStr())[0]
 
 	elementToEdit, err := s.repositories.Element.Get(ctx, &element.Filter{ID: elementId}, nil)
 	if err != nil {
@@ -58,7 +58,7 @@ func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) err
 		return err
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), "")
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String())
@@ -70,7 +70,7 @@ func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) err
 }
 
 func (s *Service) EditLinkSave(ctx context.Context, update *telegram.Update) error {
-	elementId := s.clients.Cache.GetTexts(update.GetChatIdStr())[0]
+	elementId := s.clients.Cache.GetTexts(ctx, update.GetChatIdStr())[0]
 
 	elementToEdit, err := s.repositories.Element.Get(ctx, &element.Filter{ID: elementId}, nil)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *Service) EditLinkSave(ctx context.Context, update *telegram.Update) err
 		return err
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), "")
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(elementToEdit.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String())

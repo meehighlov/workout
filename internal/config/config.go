@@ -17,6 +17,7 @@ const (
 type Config struct {
 	ENV                        string `env:"ENV" env-default:"local"`
 	Users                      string `env:"USERS" env-required:"true"`
+	WorkerCount                int    `env:"WORKER_COUNT" env-default:"10"`
 	ReportChatId               string `env:"REPORT_CHAT_ID" env-required:"true"`
 	Timezone                   string `env:"TIMEZONE" env-default:"Europe/Moscow"`
 	PostgresDSN                string `env:"POSTGRES_DSN" env-required:"true"`

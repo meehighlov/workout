@@ -18,7 +18,7 @@ func (s *Service) Add(ctx context.Context, update *telegram.Update) error {
 		telegram.WithReplyMurkup(s.builders.KeyboardBuilder.Keyboard().Murkup()),
 	)
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), s.constants.COMMAND_ADD_ELEMENT_SAVE)
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), s.constants.COMMAND_ADD_ELEMENT_SAVE)
 
 	return nil
 }
@@ -42,7 +42,7 @@ func (s *Service) AddSave(ctx context.Context, update *telegram.Update) error {
 		return err
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), "")
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	keyboard.AppendAsLine(keyboard.NewButton(s.constants.BUTTON_TEXT_OPEN, s.builders.CallbackDataBuilder.Build(element.ID.String(), s.constants.COMMAND_INFO_ELEMENT, "0").String()))

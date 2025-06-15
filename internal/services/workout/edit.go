@@ -14,7 +14,7 @@ func (s *Service) Edit(ctx context.Context, update *telegram.Update) error {
 	)
 
 	params := s.builders.CallbackDataBuilder.FromString(update.CallbackQuery.Data)
-	s.clients.Cache.AppendText(update.GetChatIdStr(), params.ID)
+	s.clients.Cache.AppendText(ctx, update.GetChatIdStr(), params.ID)
 
 	s.clients.Telegram.Reply(ctx, "Что будем редактировать?", update, telegram.WithReplyMurkup(keyboard.Murkup()))
 
@@ -32,13 +32,13 @@ func (s *Service) EditRequest(ctx context.Context, update *telegram.Update) erro
 		nextHandler = s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), nextHandler)
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), nextHandler)
 
 	return nil
 }
 
 func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) error {
-	workoutId := s.clients.Cache.GetTexts(update.GetChatIdStr())[0]
+	workoutId := s.clients.Cache.GetTexts(ctx, update.GetChatIdStr())[0]
 
 	workoutToEdit, err := s.repositories.Workout.Get(ctx, &workout.Filter{ID: workoutId}, nil)
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *Service) EditNameSave(ctx context.Context, update *telegram.Update) err
 		return err
 	}
 
-	s.clients.Cache.SetNextHandler(update.GetChatIdStr(), "")
+	s.clients.Cache.SetNextHandler(ctx, update.GetChatIdStr(), "")
 
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 	backButton := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(workoutToEdit.ID.String(), s.constants.COMMAND_INFO_WORKOUT, "0").String())

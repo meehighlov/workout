@@ -32,9 +32,9 @@ func (s *Service) ElementsSelectionWheel(ctx context.Context, update *telegram.U
 		)
 
 	if params.Command == s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL {
-		s.clients.Cache.PopWorkoutElement(update.GetChatIdStr())
+		s.clients.Cache.PopWorkoutElement(ctx, update.GetChatIdStr())
 
-		drills := s.clients.Cache.GetWorkoutElements(update.GetChatIdStr())
+		drills := s.clients.Cache.GetWorkoutElements(ctx, update.GetChatIdStr())
 		msg += strings.Join(drills, "\n")
 
 		_, err = s.clients.Telegram.Edit(ctx, msg, update, telegram.WithReplyMurkup(keyboard.Murkup()))
@@ -50,9 +50,9 @@ func (s *Service) ElementsSelectionWheel(ctx context.Context, update *telegram.U
 
 	if params.Command == s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT {
 		element, _ := s.repositories.Element.Get(ctx, &element.Filter{ID: params.ID}, nil)
-		s.clients.Cache.AppendWorkoutElement(update.GetChatIdStr(), element.Name)
+		s.clients.Cache.AppendWorkoutElement(ctx, update.GetChatIdStr(), element.Name)
 
-		drills := s.clients.Cache.GetWorkoutElements(update.GetChatIdStr())
+		drills := s.clients.Cache.GetWorkoutElements(ctx, update.GetChatIdStr())
 		msg += strings.Join(drills, "\n")
 
 		_, err = s.clients.Telegram.Edit(ctx, msg, update, telegram.WithReplyMurkup(keyboard.Murkup()))
@@ -60,7 +60,7 @@ func (s *Service) ElementsSelectionWheel(ctx context.Context, update *telegram.U
 		return nil
 	}
 
-	drills := s.clients.Cache.GetWorkoutElements(update.GetChatIdStr())
+	drills := s.clients.Cache.GetWorkoutElements(ctx, update.GetChatIdStr())
 	msg += strings.Join(drills, "\n")
 
 	_, err = s.clients.Telegram.Reply(ctx, msg, update, telegram.WithReplyMurkup(keyboard.Murkup()))
