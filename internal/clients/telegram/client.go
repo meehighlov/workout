@@ -263,7 +263,7 @@ func (tc *Client) GetUpdates(ctx context.Context, offset int) (*UpdateResponse, 
 	q := url.Values{}
 	q.Add("offset", strconv.Itoa(offset))
 	q.Add("limit", strconv.Itoa(100))
-	q.Add("timeout", "20")
+	q.Add("timeout", "60")
 
 	data, err := tc.sendRequest(ctx, "getUpdates", q)
 	if err != nil {
@@ -292,7 +292,7 @@ func (tc *Client) GetUpdatesChannel(ctx context.Context) UpdatesChannel {
 			if err != nil {
 				tc.logger.Error(err.Error())
 				tc.logger.Error("Failed to get updates, retrying in 3 seconds...")
-				time.Sleep(time.Second * time.Duration(3))
+				time.Sleep(time.Millisecond * time.Duration(500))
 
 				continue
 			}
