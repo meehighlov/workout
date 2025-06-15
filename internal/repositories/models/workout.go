@@ -36,7 +36,8 @@ func (w *Workout) GetDrills() []string {
 }
 
 type DrillSet struct {
-	RepetitionCount int `json:"repetition_count"`
+	RepetitionCount int    `json:"repetition_count"`
+	Weight          string `json:"weight"`
 }
 
 type Drill struct {

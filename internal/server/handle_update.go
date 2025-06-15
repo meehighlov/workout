@@ -128,7 +128,19 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		s.constants.COMMAND_WORKOUT_PREV_SET,
 		s.constants.COMMAND_WORKOUT_PLUS_REPS,
 		s.constants.COMMAND_WORKOUT_MINUS_REPS,
-		s.constants.COMMAND_DRILL_EXEC:
+		s.constants.COMMAND_DRILL_EXEC,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS,
+		s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS:
 		return s.services.Workout.InfoWorkout(ctx, update)
 	case s.constants.COMMAND_DELETE_WORKOUT:
 		return s.services.Workout.Delete(ctx, update)
@@ -138,7 +150,7 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		return s.services.Workout.Edit(ctx, update)
 	case s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE:
 		return s.services.Workout.EditNameSave(ctx, update)
-	case "edit_w_req":
+	case s.constants.COMMAND_EDIT_WORKOUT_REQUEST:
 		return s.services.Workout.EditRequest(ctx, update)
 	default:
 		return nil
