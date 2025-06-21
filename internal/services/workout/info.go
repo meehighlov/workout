@@ -145,20 +145,21 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 	buttonBack := keyboard.NewButton(s.constants.BUTTON_TEXT_BACK, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_LIST_WORKOUT, "0").String())
 	buttonEdit := keyboard.NewButton(s.constants.BUTTON_TEXT_EDIT, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_EDIT_WORKOUT, strconv.Itoa(offset)).String())
 	buttonDelete := keyboard.NewButton(s.constants.BUTTON_TEXT_DELETE, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_DELETE_WORKOUT, strconv.Itoa(offset)).String())
+	buttonCopy := keyboard.NewButton(s.constants.BUTTON_TEXT_COPY, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_COPY_WORKOUT, strconv.Itoa(offset)).String())
 
 	keyboard.
-		AppendAsLine(buttonBack, buttonEdit, buttonDelete)
+		AppendAsLine(buttonBack, buttonEdit, buttonDelete, buttonCopy)
 
 	_, err = s.clients.Telegram.Edit(ctx, header, update, telegram.WithReplyMurkup(keyboard.Murkup()))
 	return err
 }
 
 func (s *Service) floorIndex(index int, length int) int {
+	if index <= 0 {
+		return 0
+	}
 	if index >= length {
 		return length - 1
-	}
-	if index < 0 {
-		return 0
 	}
 	if index >= 0 && index < length {
 		return index

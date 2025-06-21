@@ -145,6 +145,10 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		return s.services.Workout.Delete(ctx, update)
 	case s.constants.COMMAND_DELETE_WORKOUT_CONFIRM:
 		return s.services.Workout.DeleteConfirm(ctx, update)
+	case s.constants.COMMAND_COPY_WORKOUT:
+		return s.services.Workout.Copy(ctx, update)
+	case s.constants.COMMAND_COPY_WORKOUT_CONFIRM:
+		return s.services.Workout.CopyConfirm(ctx, update)
 	case s.constants.COMMAND_EDIT_WORKOUT:
 		return s.services.Workout.Edit(ctx, update)
 	case s.constants.COMMAND_EDIT_WORKOUT_NAME_SAVE:

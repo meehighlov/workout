@@ -11,6 +11,7 @@ type Constants struct {
 	WORKOUT_SAVED_MESSAGE            string
 	WORKOUT_LIST_MESSAGE             string
 	WORKOUT_NOT_SAVED_MESSAGE        string
+	WORKOUT_COPIED_MESSAGE           string
 	WORKOUT_DRILL_EXEC_MESSAGE       string
 
 	BUTTON_TEXT_WORKOUT_DRILL_SETS_INCREASE string
@@ -23,6 +24,7 @@ type Constants struct {
 	BUTTON_TEXT_TUTORIAL                    string
 	BUTTON_TEXT_EDIT                        string
 	BUTTON_TEXT_DELETE                      string
+	BUTTON_TEXT_COPY                        string
 	BUTTON_TEXT_NAME                        string
 	BUTTON_TEXT_LINK                        string
 	BUTTON_TEXT_SAVE                        string
@@ -69,6 +71,8 @@ type Constants struct {
 	COMMAND_WORKOUTS                       string
 	COMMAND_DELETE_WORKOUT                 string
 	COMMAND_DELETE_WORKOUT_CONFIRM         string
+	COMMAND_COPY_WORKOUT                   string
+	COMMAND_COPY_WORKOUT_CONFIRM           string
 	COMMAND_EDIT_WORKOUT                   string
 	COMMAND_EDIT_WORKOUT_NAME_SAVE         string
 	COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL   string
@@ -107,10 +111,11 @@ func New(cfg *config.Config) *Constants {
 		COMMAND_INFO_ELEMENT:                    "element_info",
 		BUTTON_TEXT_BACK:                        "⬅️",
 		BUTTON_TEXT_TUTORIAL:                    "туториал",
-		BUTTON_TEXT_EDIT:                        "✏️",
+		BUTTON_TEXT_EDIT:                        "⚙️",
 		COMMAND_EDIT_ELEMENT:                    "element_edit",
 		COMMAND_EDIT_ELEMENT_SAVE:               "element_edit_save",
 		BUTTON_TEXT_DELETE:                      "🗑",
+		BUTTON_TEXT_COPY:                        "📋",
 		COMMAND_DELETE_ELEMENT:                  "element_delete",
 		COMMAND_DELETE_ELEMENT_CONFIRM:          "el_del_cnfrm",
 		COMMAND_ELEMENT_SWITCH_STATUS:           "element_switch_status",
@@ -127,6 +132,7 @@ func New(cfg *config.Config) *Constants {
 		BUTTON_TEXT_SAVE:                        "сохранить",
 		COMMAND_SAVE_WORKOUT:                    "save_workout",
 		WORKOUT_SAVED_MESSAGE:                   "Тренировка сохранена",
+		WORKOUT_COPIED_MESSAGE:                  "Тренировка скопирована",
 		COMMAND_INFO_WORKOUT:                    "workout_info",
 		COMMAND_LIST_WORKOUT:                    "workout_list",
 		COMMAND_WORKOUTS:                        "/workouts",
@@ -161,17 +167,19 @@ func New(cfg *config.Config) *Constants {
 		COMMAND_EDIT_WORKOUT_REQUEST:            "edit_w_req",
 		BUTTON_TEXT_WORKOUT_DRILL_WEIGHT_TUNE:   "доп вес",
 		COMMAND_WORKOUT_TUNE_WEIGHT:             "w_tune_we",
-		COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS:    "tw_0.25p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS:   "tw_0.25m",
-		COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS:     "tw_0.5p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS:    "tw_0.5m",
-		COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS:       "tw_1p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS:      "tw_1m",
-		COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS:       "tw_5p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS:      "tw_5m",
-		COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS:      "tw_10p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS:     "tw_10m",
-		COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS:      "tw_20p",
-		COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS:     "tw_20m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS:   "tw_0.25p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS:  "tw_0.25m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS:    "tw_0.5p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS:   "tw_0.5m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS:      "tw_1p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS:     "tw_1m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS:      "tw_5p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS:     "tw_5m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS:     "tw_10p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS:    "tw_10m",
+		COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS:     "tw_20p",
+		COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS:    "tw_20m",
+		COMMAND_COPY_WORKOUT:                    "copy_workout",
+		COMMAND_COPY_WORKOUT_CONFIRM:            "copy_wo_cnfrm",
 	}
 }
