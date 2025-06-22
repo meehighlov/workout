@@ -9,6 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	WORKOUT_STATUS_ACTIVE = "active"
+	WORKOUT_STATUS_COMPLETED = "completed"
+)
+
 type Workout struct {
 	ID        uuid.UUID `gorm:"column:id;type:uuid;primaryKey"`
 	UserID    uuid.UUID `gorm:"column:user_id;type:uuid;not null"`
