@@ -5,6 +5,7 @@ import "github.com/meehighlov/workout/internal/config"
 type Constants struct {
 	START_MESSAGE string
 	ERROR_MESSAGE string
+	ACTION_CANCELLED_MESSAGE string
 
 	ELEMENTS_SELECTION_WHEEL_MESSAGE string
 	ELEMENTS_LIST_MESSAGE            string
@@ -34,6 +35,8 @@ type Constants struct {
 	BUTTON_TEXT_EXEC                        string
 	BUTTON_TEXT_DRILLS                      string
 	BUTTON_TEXT_WORKOUT_DRILL_WEIGHT_TUNE   string
+	BUTTON_TEXT_ELEMENTS_IN_WORKOUT         string
+	BUTTON_TEXT_CANCEL                      string
 
 	COMMAND_START string
 
@@ -55,6 +58,9 @@ type Constants struct {
 	COMMAND_NEW_WORKOUT                    string
 	COMMAND_ADD_ELEMENT_TO_WORKOUT         string
 	COMMAND_ADD_ELEMENT_TO_WORKOUT_CONTROL string
+	COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT_CONTROL string
+	COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT        string
+	COMMAND_EDIT_WORKOUT_DRILLS_ADD_EL string
 	COMMAND_SAVE_WORKOUT                   string
 	COMMAND_INFO_WORKOUT                   string
 	COMMAND_INFO_WORKOUT_PLUS_SETS         string
@@ -80,6 +86,8 @@ type Constants struct {
 	COMMAND_EDIT_WORKOUT_DRILLS            string
 	COMMAND_WORKOUT_TUNE_WEIGHT            string
 	COMMAND_EDIT_WORKOUT_REQUEST           string
+	COMMAND_EDIT_WORKOUT_DRILLS_RM_EL    string
+	COMMAND_CANCEL                        string
 
 	COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS  string
 	COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS string
@@ -181,5 +189,13 @@ func New(cfg *config.Config) *Constants {
 		COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS:    "tw_20m",
 		COMMAND_COPY_WORKOUT:                    "copy_workout",
 		COMMAND_COPY_WORKOUT_CONFIRM:            "copy_wo_cnfrm",
+		BUTTON_TEXT_ELEMENTS_IN_WORKOUT:         "упражнения",
+		COMMAND_EDIT_WORKOUT_DRILLS_RM_EL:       "edit_w_d_rm_el",
+		COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT_CONTROL: "add_etw_c_e",
+		COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT:        "add_etw_e",
+		COMMAND_EDIT_WORKOUT_DRILLS_ADD_EL: "add_etw_e",
+		BUTTON_TEXT_CANCEL: "отменить🚫",
+		COMMAND_CANCEL: "cancel",
+		ACTION_CANCELLED_MESSAGE: "Действие отменено✅",
 	}
 }

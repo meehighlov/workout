@@ -7,6 +7,7 @@ import (
 	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/repositories/models"
 	"github.com/meehighlov/workout/internal/repositories/user"
+	"github.com/meehighlov/workout/internal/repositories/workout"
 )
 
 func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) error {
@@ -37,6 +38,17 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 		Name:   s.builders.ShortIdBuilder.Build(),
 		UserID: user.ID,
 		Drills: drills,
+		Status: models.WORKOUT_STATUS_ACTIVE,
+	}
+
+	workoutId := s.clients.Cache.GetWorkoutID(ctx, update.GetChatIdStr())
+	if workoutId != "" {
+		workout, err := s.repositories.Workout.Get(ctx, &workout.Filter{ID: workoutId}, nil)
+		if err != nil {
+			return err
+		}
+		workoutUpdate = workout
+		workoutUpdate.Drills = s.mergeDrills(workout.Drills, drills)
 	}
 
 	err = s.repositories.Workout.Save(ctx, workoutUpdate, nil)
@@ -56,4 +68,23 @@ func (s *Service) SaveWorkout(ctx context.Context, update *telegram.Update) erro
 	}
 
 	return nil
+}
+
+func (s *Service) mergeDrills(workoutDrills []models.Drill, newDrills []models.Drill) models.Drills {
+	var mergedDrills models.Drills
+
+	seen := make(map[string]*models.Drill)
+	for _, drill := range workoutDrills {
+		seen[drill.ElementName] = &drill
+	}
+
+	for _, drill := range newDrills {
+		if existingDrill, ok := seen[drill.ElementName]; ok {
+			mergedDrills = append(mergedDrills, *existingDrill)
+		} else {
+			mergedDrills = append(mergedDrills, drill)
+		}
+	}
+
+	return mergedDrills
 }

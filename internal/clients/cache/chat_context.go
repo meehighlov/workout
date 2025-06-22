@@ -159,7 +159,7 @@ func (c *Client) GetWorkoutID(ctx context.Context, chatId string) string {
 	return chatContext.Workout.ID
 }
 
-func (c *Client) SetWorkoutElements(ctx context.Context, chatId string, holder WorkoutHolder) error {
+func (c *Client) SetWorkout(ctx context.Context, chatId string, holder WorkoutHolder) error {
 	chatContext := c.GetOrCreateChatContext(ctx, chatId)
 	if chatContext == nil {
 		return errors.New("chat context not found")

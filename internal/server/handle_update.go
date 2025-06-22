@@ -84,6 +84,8 @@ func (s *Server) HandleUpdate(ctx context.Context, update *telegram.Update) erro
 
 func (s *Server) handle(ctx context.Context, update *telegram.Update, command string) error {
 	switch command {
+	case s.constants.COMMAND_CANCEL:
+		return s.handleCancel(ctx, update)
 	case s.constants.COMMAND_START:
 		return s.services.User.Start(ctx, update)
 	case s.constants.COMMAND_ADD_ELEMENT, s.constants.COMMAND_NEW_ELEMENT:
@@ -112,9 +114,15 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 		s.constants.COMMAND_NEW_WORKOUT,
 		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT,
 		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_CONTROL,
-		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL,
-		s.constants.COMMAND_EDIT_WORKOUT_DRILLS:
+		s.constants.COMMAND_ADD_ELEMENT_TO_WORKOUT_RM_EL:
 		return s.services.Element.ElementsSelectionWheel(ctx, update)
+	case
+		s.constants.COMMAND_EDIT_WORKOUT_DRILLS,
+		s.constants.COMMAND_EDIT_WORKOUT_DRILLS_ADD_EL,
+		s.constants.COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT_CONTROL,
+		s.constants.COMMAND_ADD_ELEMENT_TO_EDIT_WORKOUT,
+		s.constants.COMMAND_EDIT_WORKOUT_DRILLS_RM_EL:
+		return s.services.Element.ElementsSelectionWheelOnWrokoutEdit(ctx, update)
 	case s.constants.COMMAND_SAVE_WORKOUT:
 		return s.services.Workout.SaveWorkout(ctx, update)
 	case s.constants.COMMAND_LIST_WORKOUT, s.constants.COMMAND_WORKOUTS:
@@ -158,4 +166,10 @@ func (s *Server) handle(ctx context.Context, update *telegram.Update, command st
 	default:
 		return nil
 	}
+}
+
+func (s *Server) handleCancel(ctx context.Context, update *telegram.Update) error {
+	s.clients.Cache.Reset(ctx, update.GetChatIdStr())
+	s.clients.Telegram.Edit(ctx, s.constants.ACTION_CANCELLED_MESSAGE, update)
+	return nil
 }
