@@ -2,6 +2,7 @@ package workout
 
 import (
 	"context"
+	"time"
 
 	"github.com/meehighlov/workout/internal/clients/telegram"
 	"github.com/meehighlov/workout/internal/repositories/workout"
@@ -24,7 +25,7 @@ func (s *Service) Edit(ctx context.Context, update *telegram.Update) error {
 		keyboard.NewButton(s.constants.BUTTON_TEXT_ELEMENTS_IN_WORKOUT, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_EDIT_WORKOUT_DRILLS, "0").String()),
 	)
 
-	s.clients.Telegram.Reply(ctx, "Что будем редактировать?", update, telegram.WithReplyMurkup(keyboard.Murkup()))
+	s.clients.Telegram.Reply(ctx, "Что будем редактировать?", update, telegram.WithReplyMurkup(keyboard.Murkup()), telegram.WithAutoDelete(10*time.Second))
 
 	return nil
 }

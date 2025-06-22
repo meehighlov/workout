@@ -184,3 +184,8 @@ type SendDocumentResponse struct {
 	Ok     bool    `json:"ok"`
 	Result Message `json:"result"`
 }
+
+type SendMessageResponse struct {
+	Ok     bool    `json:"ok"`
+	Result Message `json:"result"`
+}

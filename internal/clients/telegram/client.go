@@ -61,6 +61,19 @@ func WithReplyMurkup(replyMarkup []*[]map[string]interface{}) SendMessageOption 
 	}
 }
 
+// AutoDeleteOption - опция для автоудаления сообщения
+type AutoDeleteOption struct {
+	Duration time.Duration
+}
+
+func WithAutoDelete(duration time.Duration) SendMessageOption {
+	return func(q url.Values) error {
+		// Сохраняем данные об автоудалении в специальном поле
+		q.Add("__auto_delete_duration", duration.String())
+		return nil
+	}
+}
+
 // --------------------------------------------------------------- telegram client  ---------------------------------------------------------------
 
 func setupLogger(logger *slog.Logger) *slog.Logger {
@@ -228,6 +241,11 @@ func (tc *Client) SendMessage(ctx context.Context, chatId, text string, opts ...
 	q.Add("chat_id", chatId)
 	q.Add("text", text)
 
+	var (
+		autoDeleteDuration time.Duration
+		response           SendMessageResponse
+	)
+
 	for _, optSetter := range opts {
 		err := optSetter(q)
 		if err != nil {
@@ -238,17 +256,33 @@ func (tc *Client) SendMessage(ctx context.Context, chatId, text string, opts ...
 		}
 	}
 
+	if durationStr := q.Get("__auto_delete_duration"); durationStr != "" {
+		if duration, err := time.ParseDuration(durationStr); err == nil {
+			autoDeleteDuration = duration
+		}
+		q.Del("__auto_delete_duration")
+	}
+
 	data, err := tc.sendRequest(ctx, "sendMessage", q)
 	if err != nil {
-		return nil, err
+		return &response.Result, err
 	}
 
-	model := Message{}
-	if err := json.Unmarshal(data, &model); err != nil {
-		return nil, err
+	if err := json.Unmarshal(data, &response); err != nil {
+		return &response.Result, err
 	}
 
-	return &model, err
+	if autoDeleteDuration > 0 {
+		go func() {
+			time.Sleep(autoDeleteDuration)
+			err := tc.DeleteMessage(context.Background(), chatId, strconv.Itoa(response.Result.MessageId))
+			if err != nil {
+				tc.logger.Error("error auto-deleting message: " + err.Error())
+			}
+		}()
+	}
+
+	return &response.Result, err
 }
 
 func (tc *Client) EditMessageReplyMarkup(
