@@ -78,6 +78,14 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		}
 	}
 
+	if strings.HasPrefix(params.Command, "tr_") {
+		repsChange := s.ParseReps(params.Command)
+		drill.Sets[drill.CurrentlyObesrvableSet].RepetitionCount += repsChange
+		if drill.Sets[drill.CurrentlyObesrvableSet].RepetitionCount < 0 {
+			drill.Sets[drill.CurrentlyObesrvableSet].RepetitionCount = 0
+		}
+	}
+
 	if strings.HasPrefix(params.Command, "tw_") {
 		weight := s.ParseWeight(params.Command)
 		prevWeight, _ := strconv.ParseFloat(
@@ -108,8 +116,10 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 		removeSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_SETS_DECREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_SET, strconv.Itoa(offset)).String())
 		nextSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_NEXT, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_NEXT_SET, strconv.Itoa(offset)).String())
 		prevSetButton := keyboard.NewButton(s.constants.BUTTON_TEXT_PREV, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PREV_SET, strconv.Itoa(offset)).String())
-		plusRepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_REPS_INCREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_REPS, strconv.Itoa(offset)).String())
-		minusRepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_REPS_DECREASE, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_REPS, strconv.Itoa(offset)).String())
+		plus1RepButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_PLUS_1_REP, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_1_REP, strconv.Itoa(offset)).String())
+		minus1RepButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_MINUS_1_REP, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_1_REP, strconv.Itoa(offset)).String())
+		plus5RepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_PLUS_5_REPS, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_PLUS_5_REPS, strconv.Itoa(offset)).String())
+		minus5RepsButton := keyboard.NewButton(s.constants.BUTTON_TEXT_WORKOUT_DRILL_MINUS_5_REPS, s.builders.CallbackDataBuilder.Build(params.ID, s.constants.COMMAND_WORKOUT_MINUS_5_REPS, strconv.Itoa(offset)).String())
 
 		if len(drill.Sets) > 0 {
 			currentSet := drill.Sets[drill.CurrentlyObesrvableSet]
@@ -123,7 +133,8 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 			keyboard.
 				AppendAsLine(prevSetButton, nextSetButton).
 				AppendAsLine(removeSetButton, newSetButton).
-				AppendAsLine(minusRepsButton, plusRepsButton).
+				AppendAsLine(minus1RepButton, plus1RepButton).
+				AppendAsLine(minus5RepsButton, plus5RepsButton).
 				Append(s.WeightButtons(workout, offset))
 		} else {
 			keyboard.AppendAsLine(newSetButton)
@@ -170,23 +181,23 @@ func (s *Service) floorIndex(index int, length int) int {
 func (s *Service) WeightButtons(workout *models.Workout, offset int) *inlinekeyboard.Builder {
 	keyboard := s.builders.KeyboardBuilder.Keyboard()
 
-	kg025plus := keyboard.NewButton("+0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS, strconv.Itoa(offset)).String())
-	kg025minus := keyboard.NewButton("-0.25", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS, strconv.Itoa(offset)).String())
+	kg025plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_0_25, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_PLUS, strconv.Itoa(offset)).String())
+	kg025minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_0_25, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_25_MINUS, strconv.Itoa(offset)).String())
 
-	kg05plus := keyboard.NewButton("+0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS, strconv.Itoa(offset)).String())
-	kg05minus := keyboard.NewButton("-0.5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS, strconv.Itoa(offset)).String())
+	kg05plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_0_5, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_PLUS, strconv.Itoa(offset)).String())
+	kg05minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_0_5, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_0_5_MINUS, strconv.Itoa(offset)).String())
 
-	kg1plus := keyboard.NewButton("+1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS, strconv.Itoa(offset)).String())
-	kg1minus := keyboard.NewButton("-1", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS, strconv.Itoa(offset)).String())
+	kg1plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_1, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_PLUS, strconv.Itoa(offset)).String())
+	kg1minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_1, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_1_MINUS, strconv.Itoa(offset)).String())
 
-	kg5plus := keyboard.NewButton("+5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS, strconv.Itoa(offset)).String())
-	kg5minus := keyboard.NewButton("-5", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS, strconv.Itoa(offset)).String())
+	kg5plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_5, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_PLUS, strconv.Itoa(offset)).String())
+	kg5minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_5, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_5_MINUS, strconv.Itoa(offset)).String())
 
-	kg10plus := keyboard.NewButton("+10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS, strconv.Itoa(offset)).String())
-	kg10minus := keyboard.NewButton("-10", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS, strconv.Itoa(offset)).String())
+	kg10plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_10, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_PLUS, strconv.Itoa(offset)).String())
+	kg10minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_10, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_10_MINUS, strconv.Itoa(offset)).String())
 
-	kg20plus := keyboard.NewButton("+20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS, strconv.Itoa(offset)).String())
-	kg20minus := keyboard.NewButton("-20", s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS, strconv.Itoa(offset)).String())
+	kg20plus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_PLUS_20, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_PLUS, strconv.Itoa(offset)).String())
+	kg20minus := keyboard.NewButton(s.constants.BUTTON_TEXT_WEIGHT_MINUS_20, s.builders.CallbackDataBuilder.Build(workout.ID.String(), s.constants.COMMAND_WORKOUT_TUNE_WEIGHT_20_MINUS, strconv.Itoa(offset)).String())
 
 	keyboard.
 		AppendAsLine(kg025minus, kg05minus, kg025plus, kg05plus).
@@ -210,6 +221,25 @@ func (s *Service) ParseWeight(rawWeightData string) float64 {
 
 	if action == "m" {
 		return (-1) * kg
+	}
+
+	return 0
+}
+
+func (s *Service) ParseReps(rawRepsData string) int {
+	repsData := strings.Split(rawRepsData, "_")
+	reps := repsData[1]
+	action := string(reps[len(reps)-1])
+	repsWithoutAction := strings.Replace(reps, action, "", 1)
+
+	count, _ := strconv.Atoi(repsWithoutAction)
+
+	if action == "p" {
+		return count
+	}
+
+	if action == "m" {
+		return (-1) * count
 	}
 
 	return 0
