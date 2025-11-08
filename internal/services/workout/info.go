@@ -31,6 +31,7 @@ func (s *Service) InfoWorkout(ctx context.Context, update *telegram.Update) erro
 	}
 
 	header := fmt.Sprintf("🏃 %s\n\n", workout.Name)
+	header += fmt.Sprintf("🕐 %s\n\n", workout.CreatedAt.Format("02.01.2006 15:04"))
 	drill := workout.Drills[s.floorIndex(offset, len(workout.Drills))]
 
 	drillText := fmt.Sprintf("💪 %d/%d %s\n\n", offset+1, len(workout.Drills), drill.ElementName)
